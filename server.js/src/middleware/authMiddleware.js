@@ -19,32 +19,5 @@ const authMiddleware = (req, res, next) => {
 };
 
 
-const adminMiddleware = (req, res, next) => {
-    if (req.user.role !== "admin") {
-        return res.status(403).json({ error: "Acess Denied. Vendors only."});
-    }
-    next();
-};
 
 
-const customerMiddleware = (req, res, next) => {
-    if (req.user.role !== "customer") {
-        return res.status(403).json({ error: "Acess Denied. Customers only."});
-    }
-    next();
-};
-
-
-const vendorMiddleware = (req, res, next) => {
-    if (req.user.role !== "vendor") {
-        return res.status(403).json({ error: "Acess Denied. Vendors only."});
-    }
-    next();
-};
-
-module.exports = {
-    authMiddleware,
-    adminMiddleware,
-    vendorMiddleware,
-    customerMiddleware
-};
