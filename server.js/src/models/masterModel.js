@@ -1,20 +1,20 @@
 const mongoose = require("mongoose");
 
 const masterSchema = new mongoose.Schema({
-    createdAt: { type: Date, default: Date.now }, // ✅ Fixed default value
+    createdAt: { type: Date, default: Date.now }, 
     createdBy: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "User",
-        required: false // ✅ Removed incorrect condition
+        required: false 
     },
     updatedAt: { type: Date, default: Date.now },
-    updatedBy: {  // ✅ Fixed inconsistent naming
+    updatedBy: {  
         type: mongoose.Schema.Types.ObjectId,
         ref: "User",
     },
-    isActive: { type: Boolean, default: true } // ✅ Changed `isactive` to camelCase
+    isActive: { type: Boolean, default: true } 
 },
-{ timestamps: true } // ✅ This enables automatic createdAt & updatedAt
+{ timestamps: true } 
 );
 
 module.exports = masterSchema;

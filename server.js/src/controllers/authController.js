@@ -9,12 +9,12 @@ exports.registerUser = async (req, res) => {
         const { name, email, password, role, createdBy } = req.body;
 
         if (!name || !email || !password || !role) {
-            return res.status(400).json({ error: "All fields are required" });
+            return res.status(400).json({ msg: "All fields are required" });
         }
 
         const userExists = await User.findOne({ email });
         if (userExists) {
-            return res.status(400).json({ error: "User already exists" });
+            return res.status(400).json({ msg: "User already exists" });
         }
 
         const hashedPassword = await bcrypt.hash(password, 10);
@@ -32,7 +32,7 @@ exports.registerUser = async (req, res) => {
 
     } catch (error) {
         console.error("Error in registerUser:", error);
-        res.status(500).json({ error: "Internal Server Error", details: error.message });
+        res.status(500).json({ msg: "Internal Server Error", details: error.message });
     }
 };
 
@@ -42,17 +42,17 @@ exports.loginUser = async (req, res) => {
         const { email, password } = req.body;
 
         if (!email || !password) {
-            return res.status(400).json({ error: "All fields are required" });
+            return res.status(400).json({ msg: "All fields are required" });
         }
 
         const user = await User.findOne({ email });
         if (!user) {
-            return res.status(404).json({ error: "User does not exist" });
+            return res.status(404).json({ msg: "User does not exist" });
         }
 
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
-            return res.status(400).json({ error: "Invalid credentials" });
+            return res.status(400).json({ msg: "Invalid credentials" });
         }
 
         const token = jwt.sign(
@@ -75,7 +75,41 @@ exports.getAllUsers = async (req, res) => {
         const users = await User.find({}, { password: 0 });
         res.status(200).json(users);
      } catch (error) {
-        res.status(500).json({ error: "Internal server error", details: error.message });
+        res.status(500).json({ msg: "Internal server error", details: error.message });
      }
 }
+
+exports.getUserById =async (req, res) => {
+    try {
+        const { userId } = req.params;
+        const user = await User.findById(userId);
+        if (!user) return res.status(404).json({ msg: "User not found" });
+
+        res.status(200).json(user);
+    } catch (error) {
+        res.status(500).json({ msg: "Internal server error" });
+    }
+};
+
+exports.updateUser =async (req, res) => {
+    try {
+        const updateUser = await User.findByIdAndUpdate(req.params.userId, req.body, {new: true});
+        if (!updateUser) return res.status(404).json({ error: "User not found" });
+
+        res.status(200).json({ msg: "User updated successfully", updateUser });
+    } catch (error) {
+        res.status(500).json({ msg: "Internal server error" });
+    }
+};
+
+exports.deleteUser =async (req, res) => {
+    try {
+        const deleteUser = await User.findByIdAndDelete(req.params.userId);
+        if (!deleteUser) return res.status(404).json({ error: "User not found" });
+
+        res.status(200).json({ msg: "User deleted successfully" });
+    } catch (error) {
+        res.status(500).json({ msg: "Internal server error" });
+    }
+};
 

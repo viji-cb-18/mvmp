@@ -5,7 +5,6 @@ exports.addProduct = async (req, res) => {
     try {
         const { vendorId, name, description, price, stockQuantity, category, images } = req.body;
 
-        // Validation Check
         if (!vendorId || !name || !price || !stockQuantity) {
             return res.status(400).json({ error: "Missing required fields" });
         }
@@ -27,25 +26,7 @@ exports.addProduct = async (req, res) => {
         res.status(500).json({ msg: "Internal server error", error: error.message });
     }
 };
-/*exports.addProduct = async (req, res) => {
-    try {
-        const { name, price, description, category } = req.body;
 
-        const newProduct = new Product({
-            name,
-            price,
-            description,
-            category
-        });
-
-        await newProduct.save();
-        res.status(201).json({ msg: "Product added successfully", product: newProduct });
-    } catch (error) {
-        res.status(500).json({ msg: "Internal server error", error: error.message });
-    }
-};*/
-
-//Get All Products
 exports.getAllProducts = async (req, res) => {
     try {
         const products =await Product.find();
@@ -73,6 +54,19 @@ exports.getProductById = async (req, res) => {
     }
 };
 
+exports.updateProduct = async (req, res) => {
+    try {
+        const updatedProduct = await Product.findByIdAndUpdate(req.params.productId, req.body, { new: true });
+
+        if (!updatedProduct) {
+            return res.status(404).json({ error: "Product not found" });
+        }
+
+        res.status(200).json({ message: "Product updated successfully", updatedProduct });
+    } catch (error) {
+        res.status(500).json({ error: "Internal Server Error", details: error.message });
+    }
+};
 
 exports.deleteProduct = async (req, res) => {
     try {
