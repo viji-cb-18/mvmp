@@ -30,7 +30,7 @@ exports.getOrder = async (req, res) =>{
     }
 };
 
-//Get Order by ID
+
 exports.getOrderById = async (req, res) =>{
     try {
         const order = await Order.findById(req.params.orderId).populate("customerId vendorId products.productId");
