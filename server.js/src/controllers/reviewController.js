@@ -1,9 +1,23 @@
 const Review =require("../models/Review");
+const multer = require("multer");
+const { cloudinary } = require("../config/cloudinaryconfig");
+
 
 exports.addReview = async (req, res) => {
     try {
         const { userId, productId, rating,comment } = req.body;
-        const review = new Review({ userId,productId, rating, comment });
+
+        if (!productId || !rating) {
+            return res.status(400).json({ error: "Product ID and rating are required" });
+        }
+
+        const review = new Review({ 
+            userId: req.user._id,
+            productId, 
+            rating, 
+            comment 
+        });
+
         await review.save();
         res.status(201).json({ message: "Review added successfully", review});
     } catch (error) {
@@ -13,15 +27,31 @@ exports.addReview = async (req, res) => {
 
 exports.getAllReviews = async (req, res) => {
     try {
-        const reviews = await Review.find()
-            .populate("userId", "name email")
-            .populate("productId", "name price");
+        const { page = 1, limit = 10, sortBy = "createdAt", order = "desc", productId } = req.query;
 
-        if (!reviews || reviews.length === 0) {
+        const filter = {};
+        if (productId) filter.productId = productId;
+
+        const reviews = await Review.find(filter)
+            .populate("userId", "name email")
+            .populate("productId", "name price")
+            .sort({ [sortBy]: order === "asc" ? 1 : -1 })
+            .limit(parseInt(limit))
+            .skip((parseInt(page) - 1) * parseInt(limit));
+
+        const total = await Review.countDocuments(filter);    
+
+        if (!reviews.length) {
             return res.status(404).json({ error: "No reviews found" });
         }
 
-        res.status(200).json(reviews);
+        res.status(200).json({
+            page: parseInt(page),
+            limit: parseInt(limit),
+            totalPages: Math.ceil(total / limit),
+            totalItems: total,
+            data: reviews
+        });
     } catch (error) {
         console.error("Error in getAllReviews:", error.message);
         res.status(500).json({ error: "Failed to fetch reviews", details: error.message });
@@ -49,11 +79,19 @@ exports.updateReview = async (req, res) => {
         const { reviewId } = req.params;
         const { rating, comment } = req.body;
 
-        const updatedReview = await Review.findByIdAndUpdate(reviewId, { rating, comment }, { new: true });
+        const updatedReview = await Review.findByIdAndUpdate(reviewId);
 
         if (!updatedReview) {
             return res.status(404).json({ error: "Review not found" });
         }
+
+        if (req.user.role !== "admin" && req.user._id.toString() !== updatedReview.userId.toString()) {
+            return res.status(403).json({ error: "Access denied! You can only update your own reviews" });
+        }
+
+        updatedReview.rating = rating || updatedReview.rating;
+        updatedReview.comment = comment || updatedReview.comment;
+        await updatedReview.save();
 
         res.status(200).json({ message: "Review updated successfully", updatedReview });
     } catch (error) {
@@ -69,6 +107,12 @@ exports.deleteReview = async (req, res) => {
         if (!deletedReview) {
             return res.status(404).json({ error: "Review not found" });
         }
+
+        if (req.user.role !== "admin" && req.user._id.toString() !== deletedReview.userId.toString()) {
+            return res.status(403).json({ error: "Access denied! You can only delete your own reviews" });
+        }
+
+        await deletedReview.deleteOne();
 
         res.status(200).json({ message: "Review deleted successfully" });
     } catch (error) {

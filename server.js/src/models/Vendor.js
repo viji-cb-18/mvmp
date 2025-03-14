@@ -7,6 +7,7 @@ const vendorSchema = new mongoose.Schema({
     storeName: { type: String, required: true },
     description: { type: String },
     registrationStatus: { type: String, enum: ["pending","approved","rejected"], default: "pending"},
+    storeLogo: { type: String },
     contactNumber: { type: String, required: true },
     rating: { type: Number, min: 0, max: 5, default: 0 },
     totalReviews: { type: Number, default: 0 }

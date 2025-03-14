@@ -1,4 +1,9 @@
+const { default: mongoose } = require("mongoose");
 const Product = require("../models/Product");
+const Category = require("../models/Category");
+const multer = require("multer");
+const { cloudinary } = require("../config/cloudinaryconfig");
+
 
 
 exports.addProduct = async (req, res) => {
@@ -10,7 +15,7 @@ exports.addProduct = async (req, res) => {
         }
 
         const newProduct = new Product({
-            vendorId,
+            vendorId: req.user._id,
             name,
             description,
             price,
@@ -29,11 +34,36 @@ exports.addProduct = async (req, res) => {
 
 exports.getAllProducts = async (req, res) => {
     try {
-        const products =await Product.find();
-        if (products.length === 0) {
-            return res.status(404).json({ error: "No products found "});
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        const skip = (page - 1) * limit;
+
+        const sortBy = req.query.sortBy || "createdAt";
+        const order = req.query.order === "asc" ? 1 : 1;
+
+        const category = req.query.category;
+        const minPrice = parseFloat(req.query.minPrice);
+        const maxprice = parseFloat(req.query.maxPrice);
+
+        const filter ={ };
+        if (category) filter.category = category;
+        if(!isNaN(minPrice) && !isNaN(maxprice)) {
+            filter.price = { $gte: minPrice, $lte: maxprice };
         }
-        res.status(200).json(products);
+
+        const total = await Product.countDocuments(filter);
+
+        const products = await Product.find(filter).sort({ [sortBy]: order }).limit(limit).skip(skip);
+
+        res.status(200).json({ 
+            success: true, 
+            page, 
+            limit,
+            totalPages: Math.ceil(total / limit),
+            totalItems: total,
+            data: products
+        });
+        
     }catch (error) {
         console.error("Error in getAll Products:", error.message);
         res.status(500).json({ error: "Failed to fetch products"});
@@ -56,11 +86,18 @@ exports.getProductById = async (req, res) => {
 
 exports.updateProduct = async (req, res) => {
     try {
-        const updatedProduct = await Product.findByIdAndUpdate(req.params.productId, req.body, { new: true });
+        const { productId } = req.params;
+        const product = await Product.findById(productId);
 
         if (!updatedProduct) {
             return res.status(404).json({ error: "Product not found" });
         }
+        
+        if (req.user.role !== "admin" && req.user._id.toString() !== product.vendorId.toString()) {
+            return res.status(403).json({ error: "Access denied! You can only update your own products" });
+        }
+
+        const updatedProduct = await Product.findByIdAndUpdate(req.params.productId, req.body, { new: true });
 
         res.status(200).json({ message: "Product updated successfully", updatedProduct });
     } catch (error) {
@@ -70,9 +107,15 @@ exports.updateProduct = async (req, res) => {
 
 exports.deleteProduct = async (req, res) => {
     try {
+        const { productId } = req.params;
         const product = await Product.findById(req.params.productId);
+
         if (!product) {
             return res.status(404).json({ error: "Product not found" });
+        }
+
+        if (req.user.role !== "admin" && req.user._id.toString() !== product.vendorId.toString()) {
+            return res.status(403).json({ error: "Access denied! You can only delete your own products" });
         }
         
         await Product.findByIdAndDelete(req.params.productId);
@@ -84,3 +127,14 @@ exports.deleteProduct = async (req, res) => {
     }
 };
 
+exports.uploadProductImage = async (req, res) => {
+    try {
+        if (!req.file || req.files.length === 0) return res.status(400).json({ error: "No file uploaded" });
+
+        const imageUrls = req.files.map(file => file.path);
+
+        res.staus(200).json({ msg: "Product image uploaded successfully", images: imageUrls });
+    } catch (error) {
+        res.status(500).json({ error: "Image uploaded failed", details: error.message });
+    }
+}

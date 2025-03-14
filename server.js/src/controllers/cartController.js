@@ -37,6 +37,53 @@ exports.getCart = async (req, res) => {
     }
 };
 
+exports.updateCartItem = async (req, res) => {
+    try {
+        const { userId } = req.params;  
+        const { productId, quantity } = req.body;  
+
+        let cart = await Cart.findOne({ userId });
+        
+        if (!cart) {
+            return res.status(404).json({ error: "Cart not found" });
+        }
+        const itemIndex = cart.items.findIndex(item => item.productId.toString() === productId);
+        
+        if (itemIndex === -1) {
+            return res.status(404).json({ error: "Product not found in cart" });
+        }
+        
+        const product = await Product.findById(productId);
+        
+        if (!product) {
+            return res.status(404).json({ error: "Product not found" });
+        }
+
+        if (quantity <= 0) {
+            return res.status(400).json({ error: "Quantity should be greater than 0" });
+        }
+
+        if (quantity > product.stockQuantity) {
+            return res.status(400).json({ error: "Insufficient stock available" });
+        }
+
+        cart.items[itemIndex].quantity = quantity;
+
+        cart.totalPrice = cart.items.reduce((acc, item) => acc + item.price * item.quantity, 0);
+
+        await cart.save();
+
+        res.status(200).json({
+            msg: "Cart updated successfully",
+            cart
+        });
+    } catch (error) {
+        console.error("Error in updateCartItem:", error);
+        res.status(500).json({ error: "Internal Server Error", details: error.message });
+    }
+};
+
+
 
 exports.removeFromCart = async (req, res) => {
     try {
@@ -45,15 +92,16 @@ exports.removeFromCart = async (req, res) => {
         const cart = await Cart.findOne(userId);
         if (!cart) {
             return res.status(404).json({ msg: "Cart not found" });
-        } else {
-            const itemIndex = cart.items.findIndex(item => item.productId.toString() !== productId);
+        } 
+
+         const itemIndex = cart.items.findIndex(item => item.productId.toString() !== productId);
             if (itemIndex === -1) {
                 return res.status(404).json({ msg: "product not found in cart" });
             }
 
             cart.items.splice(itemIndex, 1);
             cart.totalPrice = cart.items.reduce((acc, item) => acc + item.price * item.quantity, 0);
-        }
+        
 
         await cart.save();
         return res.status(200).json({ msg: "Item removed from cart", cart });
@@ -68,7 +116,6 @@ exports.removeFromCart = async (req, res) => {
 
 exports.clearCart = async (req, res) => {
     try {
-       
         
         const cart = await Cart.findById(req.params.cartId );
         if (!Cart) {

@@ -1,14 +1,17 @@
-const Category = require(",,/models/Category");
+const Category = require("../models/Category");
+const multer = require("multer");
+const { cloudinary } = require("../config/cloudinaryconfig");
+
 
 exports.addCategory = async (req, res) => {
     try {
-        const { name, parentCategory } = req.body;
+        const { name, parentCategory, categoryImage} = req.body;
 
         if (!name) {
             return res.status(400).json({ msg: "Category name is required" });
         }
 
-        const newCategory = new Category({ name, parentCategory });
+        const newCategory = new Category({ name, parentCategory, categoryImage });
         await newCategory.save();
 
         res.status(201).json({ msg: "Category added successfully", category: newCategory });
@@ -72,3 +75,15 @@ exports.deleteCategory = async (req, res) => {
         res.status(500).json({ msg: "Failed to delete category", details: error.message });
     }
 };
+
+exports.uploadCategoryImage = async (req, res) => {
+    try {
+        if (!req.file) return res.status(400).json({ error: "No file uploaded" });
+
+        const category = await Category.findByIdAndUpdate(req.params.categoryId, { categoryImage: req.file.path}, { new: true });
+
+        res.staus(200).json({ msg: "Category image uploaded successfully", categoryr });
+    } catch (error) {
+        res.status(500).json({ error: "Image uploaded failed", details: error.message });
+    }
+}

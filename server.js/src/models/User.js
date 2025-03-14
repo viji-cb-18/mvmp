@@ -9,6 +9,7 @@ const userSchema = new mongoose.Schema({
     role: { type: String, enum: ["customer", "vendor", "admin"], required: true },
     address: { type: String },
     phone: { type: String },
+    profileImage: { type: String } 
 })
 
 userSchema.pre("save", function (next) {

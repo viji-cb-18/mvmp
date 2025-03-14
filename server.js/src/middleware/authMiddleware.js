@@ -27,7 +27,7 @@ exports.authenticateUser = async (req, res, next) => {
 };
 
 exports.adminOnly = (req, res, next) => {
-    if (req.user.role !== "admin") {
+    if (!req.user || req.user.role !== "admin") {
         return res.status(403).json({ msg: "Access denied! Admin only" });
     }
     next();
@@ -40,4 +40,9 @@ exports.vendorOnly = (req, res, next) => {
     next();
 };
 
-
+exports.adminOrVendor = (req, res, next) => {
+    if (!req.user || (req.user.role !== "admin" && req.user.role !== "vendor")) {
+        return res.status(403).json({ msg: "Access denied! Admins or Vendors only" });
+    }
+    next();
+};

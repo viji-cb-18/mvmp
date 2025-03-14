@@ -27,8 +27,35 @@ exports.createPayment = async (req, res) => {
 
 exports.getPayments = async (req, res) => {
     try {
-        const payments = await Payment.find().populate("orderId  customerId vendorId" );
-        res.json(payments);
+        const { page = 1, limit = 10, sortBy = "createdAt", order = "desc", paymentStatus, customerId, vendorId } = req.query;
+
+        const filter = {};
+        if (paymentStatus) filter.paymentStatus = paymentStatus;
+        if (customerId) filter.customerId = customerId;
+        if (vendorId) filter.vendorId = vendorId;
+
+        const payments = await Payment.find()
+        .populate("orderId", "totalAmount", "orderStatus" )
+        .populate("customerId", "name email" )
+        .populate("vendorId", "storeName" )
+        .sort({ [sortBy]: order === "asc" ? 1 : -1 }) 
+        .limit(parseInt(limit))
+        .skip((parseInt(page) - 1) * parseInt(limit));
+
+        const total = await Payment.countDocuments(filter);
+
+        if (!payments.length) {
+            return res.status(404).json({ error: "No payments found" });
+        }
+
+        res.status(200).json({
+            page: parseInt(page),
+            limit: parseInt(limit),
+            totalPages: Math.ceil(total / limit),
+            totalItems: total,
+            data: payments
+        });
+
     } catch (error) {
         console.error("Error in createPayment:", error);
         res.status(500).json({ error: "Failed to fetch payments" });
@@ -60,6 +87,11 @@ exports.refundPayment = async (req, res) => {
         if (!payment) {
             return res.status(404).json({ error: "Payment not found "});
         }
+        
+        if (payment.paymentStatus === "Refunded") {
+            return res.status(400).json({ error: "Payment already refunded" });
+        }
+
         payment.paymentStatus = "Refunded";
         await payment.save();
 

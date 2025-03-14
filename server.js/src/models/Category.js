@@ -5,7 +5,8 @@ const masterSchema =require("./masterModel");
 const categorySchema = new mongoose.Schema({
     ...masterSchema.obj,
     name: { type: String, required: true },
-    parentCategory: { type: mongoose.Schema.Types.ObjectId, ref: "Category", default: null }
+    parentCategory: { type: mongoose.Schema.Types.ObjectId, ref: "Category", default: null },
+    categoryImage: { type: String }
     
 });
 

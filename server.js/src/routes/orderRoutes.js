@@ -8,6 +8,7 @@ router.post("/create",authMiddleware.authenticateUser,orderController.createOrde
 router.get("/",authMiddleware.authenticateUser,authMiddleware.adminOnly,orderController.getOrder);
 router.get("/:orderId",authMiddleware.authenticateUser, orderController.getOrderById);
 router.put("/:orderId/status",authMiddleware.authenticateUser,authMiddleware.vendorOnly, orderController.updateOrderStatus);
+router.put("/:orderId/cancel", authMiddleware.authenticateUser, orderController.cancelOrder);
 router.delete("/:orderId",authMiddleware.authenticateUser,authMiddleware.adminOnly, orderController.deleteOrder);
 
 module.exports = router;
