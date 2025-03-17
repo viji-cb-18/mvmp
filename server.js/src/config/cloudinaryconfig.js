@@ -1,7 +1,6 @@
 const cloudinary = require("cloudinary").v2;
-const { CloudinaryStorage } = require("multer-storage-cloudinary");
 const multer = require("multer");
-const { param } = require("../routes/vendorRoutes");
+
 
 cloudinary.config({ 
     cloud_name: process.env.CLOUDINARY_CLOUD_NAME, 
@@ -9,21 +8,31 @@ cloudinary.config({
     api_secret: process.env.CLOUDINARY_API_SECRET
 });
 
-const storage = new CloudinaryStorage({
-
-    cloudinary,
-    params: {
-        folder: "images",
-        allowedFormats: ["jpg", "png", "jpeg"],
-        transformation: [{ width: 500, height: 500, crop: "limit" }],
-
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        const uploadDir = path.join(__dirname, "../../uploads");
+        if (!fs.existsSync(uploadDir)) {
+            fs.mkdirSync(uploadDir, { recursive: true });
+        }
+        cb(null, uploadDir);
+    },
+    filename: (req, file, cb) => {
+        cb(null, `${Date.now()}-${file.originalname}`);
     }
 });
 
-const uploadMiddleware = multer({ storage: storage,
+const uploadMiddleware = multer({ 
+    storage,
     limits: {
         fileSize: 5 * 1024 * 1024
+    },
+    fileFilter: (req, file, cb) => {
+        const allowedFormats = ["image/jpeg", "image/png", "image/jpg"];
+        if (!allowedFormats.includes(file.mimetype)) {
+            return cb(new Error("Only JPG, PNG, and JPEG files are allowed!"), false);
+        }
+        cb(null, true);
     }
 });
 
-module.exports ={cloudinary, uploadMiddleware};
+module.exports ={ cloudinary, uploadMiddleware} ;

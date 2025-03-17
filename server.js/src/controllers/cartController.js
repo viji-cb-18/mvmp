@@ -5,7 +5,7 @@ const User = require("../models/User");
 
 exports.addToCart = async (req, res) => {
     try {
-        const { userId, productId, quantity, price} = req.body;
+        const { userId, productId, quantity,price} = req.body;
 
         let cart = await Cart.findOne({ userId });
         if(!cart) {
@@ -42,34 +42,34 @@ exports.updateCartItem = async (req, res) => {
         const { userId } = req.params;  
         const { productId, quantity } = req.body;  
 
+        if (!userId || !productId || quantity === undefined) {
+            return res.status(400).json({ msg: "User ID, Product ID, and quantity are required" });
+        }
+
+        const product = await Product.findById(productId);
+        if (!product) {
+            return res.status(404).json({ msg: "Product not found" });
+        }
+
         let cart = await Cart.findOne({ userId });
         
         if (!cart) {
             return res.status(404).json({ error: "Cart not found" });
         }
-        const itemIndex = cart.items.findIndex(item => item.productId.toString() === productId);
-        
-        if (itemIndex === -1) {
-            return res.status(404).json({ error: "Product not found in cart" });
-        }
-        
-        const product = await Product.findById(productId);
-        
-        if (!product) {
-            return res.status(404).json({ error: "Product not found" });
+
+        const cartItemIndex = cart.items.findIndex(item => item.productId.toString() === productId);
+        if (cartItemIndex === -1) {
+            return res.status(404).json({ msg: "Product not found in cart" });
         }
 
         if (quantity <= 0) {
-            return res.status(400).json({ error: "Quantity should be greater than 0" });
+            cart.items.splice(cartItemIndex, 1);
+        } else {
+            cart.items[cartItemIndex].quantity = quantity;
+            cart.items[cartItemIndex].totalPrice = quantity * product.price; 
         }
 
-        if (quantity > product.stockQuantity) {
-            return res.status(400).json({ error: "Insufficient stock available" });
-        }
-
-        cart.items[itemIndex].quantity = quantity;
-
-        cart.totalPrice = cart.items.reduce((acc, item) => acc + item.price * item.quantity, 0);
+        cart.totalPrice = cart.items.reduce((sum, item) => sum + item.price, 0);
 
         await cart.save();
 

@@ -3,7 +3,7 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
 const multer = require("multer");
-const { cloudinary } = require("../config/cloudinaryconfig");
+const { uploadToCloudinary } = require("../config/cloudinaryconfig");
 
 
 exports.registerUser = async (req, res) => {
@@ -25,6 +25,7 @@ exports.registerUser = async (req, res) => {
             name,
             email,
             password: hashedPassword,
+            confirmPassword: hashedPassword,
             role,
             createdBy: role === "admin" ? null : createdBy 
         });
@@ -70,6 +71,21 @@ exports.loginUser = async (req, res) => {
         res.status(500).json({ msg: "Internal server error", error: error.message });
     }
 };
+
+
+exports.uploadProfileImage = async (req, res) => {
+    try {
+        if (!req.file) return res.status(400).json({ error: "No file uploaded" });
+
+        const imageUrl = await uploadToCloudinary(req.file.path);
+
+        const user = await User.findByIdAndUpdate(req.user_id, { profileImage: imageUrl}, { new: true });
+
+        res.staus(200).json({ msg: "Profile image uploaded successfully", user });
+    } catch (error) {
+        res.status(500).json({ error: "Image uploaded failed", details: error.message });
+    }
+}
 
 
 exports.getAllUsers = async (req, res) => {
@@ -147,18 +163,31 @@ exports.updateUser =async (req, res) => {
 
 exports.changePassword = async (req, res) => {
     try {
-        const {oldPassword, newPassword } = req.body;
-        if (!oldPassword || !newPassword) {
-            return res.status(400).json({ msg: "Old and new passwords are required" });
-        }
+        const {oldPassword, newPassword, confirmNewPassword } = req.body;
+        const userId = req.user.id;
 
-        const user = await User.findById(req.user_id);
+        const user = await User.findById(userId);
+        console.log("User Found:", user);
 
         if (!user) {
             return res.status(404).json({ msg: "User not found" });
         }
 
-        const isMatch = await bcrypt.hash(newPassword, 10);
+        const isMatch = await bcrypt.compare(oldPassword, user.password);
+        if (!isMatch) {
+            return res.status(400).json({ error: "Incorrect old password" });
+        }
+
+        if (newPassword !== confirmNewPassword) {
+            return res.status(400).json({ error: "New passwords not match" });
+        }
+        
+        if (newPassword.length < 6) {
+            return res.status(400).json({ error: "Password must be at least 6 characters long" });
+        }
+
+        user.password = await bcrypt.hash(newPassword, 10);
+
         await user.save();
 
         res.status(200).json({ msg: "Password updated successfully" });
@@ -189,16 +218,4 @@ exports.deleteUser =async (req, res) => {
         res.status(500).json({ msg: "Internal server error" });
     }
 };
-
-exports.uploadProfileImage = async (req, res) => {
-    try {
-        if (!req.file) return res.status(400).json({ error: "No file uploaded" });
-
-        const user = await User.findByIdAndUpdate(req.user_id, { profileImage: req.file.path}, { new: true });
-
-        res.staus(200).json({ msg: "Profile image uploaded successfully", user });
-    } catch (error) {
-        res.status(500).json({ error: "Image uploaded failed", details: error.message });
-    }
-}
 

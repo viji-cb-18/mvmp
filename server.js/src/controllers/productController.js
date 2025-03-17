@@ -14,6 +14,17 @@ exports.addProduct = async (req, res) => {
             return res.status(400).json({ error: "Missing required fields" });
         }
 
+        const imageUrls = [];
+        if (req.files && req.files.length > 0) {
+            const uploadedImages = await Promise.all(
+                req.files.map(async (file) => {
+                    const url = await uploadToCloudinary(file.path);
+                    return url;
+                })
+            );
+            imageUrls = uploadedImages;
+        }
+
         const newProduct = new Product({
             vendorId: req.user._id,
             name,
@@ -21,7 +32,7 @@ exports.addProduct = async (req, res) => {
             price,
             stockQuantity,
             category,
-            images
+            images: imageUrls,
         });
 
         await newProduct.save();
@@ -87,17 +98,17 @@ exports.getProductById = async (req, res) => {
 exports.updateProduct = async (req, res) => {
     try {
         const { productId } = req.params;
-        const product = await Product.findById(productId);
 
+        if (!mongoose.Types.ObjectId.isValid(productId)) {
+            return res.status(400).json({ msg: "Invalid product ID format" });
+        }
+
+        const updatedProduct = await Product.findByIdAndUpdate(productId, req.body, { new: true });
+    
         if (!updatedProduct) {
             return res.status(404).json({ error: "Product not found" });
         }
         
-        if (req.user.role !== "admin" && req.user._id.toString() !== product.vendorId.toString()) {
-            return res.status(403).json({ error: "Access denied! You can only update your own products" });
-        }
-
-        const updatedProduct = await Product.findByIdAndUpdate(req.params.productId, req.body, { new: true });
 
         res.status(200).json({ message: "Product updated successfully", updatedProduct });
     } catch (error) {
@@ -129,10 +140,15 @@ exports.deleteProduct = async (req, res) => {
 
 exports.uploadProductImage = async (req, res) => {
     try {
-        if (!req.file || req.files.length === 0) return res.status(400).json({ error: "No file uploaded" });
+        if (!req.file || req.files.length === 0) {
+            return res.status(400).json({ error: "No file uploaded" });
+        }
 
-        const imageUrls = req.files.map(file => file.path);
-
+        const imageUrls = await Promise.all(
+            req.files.map(async (file) => {
+                return await uploadToCloudinary(file.path);
+            })
+        )
         res.staus(200).json({ msg: "Product image uploaded successfully", images: imageUrls });
     } catch (error) {
         res.status(500).json({ error: "Image uploaded failed", details: error.message });

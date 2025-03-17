@@ -24,10 +24,10 @@ exports.createPayment = async (req, res) => {
     }
 };
 
-
+/*
 exports.getPayments = async (req, res) => {
     try {
-        const { page = 1, limit = 10, sortBy = "createdAt", order = "desc", paymentStatus, customerId, vendorId } = req.query;
+        const { page = 1, limit = 10, sortBy = "createdAt"} = req.query;
 
         const filter = {};
         if (paymentStatus) filter.paymentStatus = paymentStatus;
@@ -59,6 +59,37 @@ exports.getPayments = async (req, res) => {
     } catch (error) {
         console.error("Error in createPayment:", error);
         res.status(500).json({ error: "Failed to fetch payments" });
+    }
+};*/
+
+exports.getPayments = async (req, res) => {
+    try {
+        const { page = 1, limit = 10 } = req.query;
+
+        const totalPayments = await Payment.countDocuments();
+
+        const payments = await Payment.find()
+            .populate("orderId", "totalAmount orderStatus")
+            .populate("customerId", "name email")
+            .populate("vendorId", "storeName")
+            .limit(parseInt(limit))
+            .skip((parseInt(page) - 1) * parseInt(limit));
+
+        if (!payments.length) {
+            return res.status(404).json({ error: "No payments found" });
+        }
+
+        res.status(200).json({
+            page: parseInt(page),
+            limit: parseInt(limit),
+            totalPages: Math.ceil(totalPayments / limit),
+            totalItems: totalPayments,
+            data: payments,
+        });
+
+    } catch (error) {
+        console.error("Error in getPayments:", error.message);
+        res.status(500).json({ error: "Failed to fetch payments", details: error.message });
     }
 };
 

@@ -11,11 +11,14 @@ app.use(cors());
 
 app.use("/api/auth", require("./src/routes/authRoutes"));
 app.use("/api/vendors", require("./src/routes/vendorRoutes"));
+app.use("/api/categories", require("./src/routes/categoryRoutes"));
 app.use("/api/products", require("./src/routes/productRoutes"));
 app.use("/api/orders", require("./src/routes/orderRoutes"));
 app.use("/api/cart", require("./src/routes/cartRoutes"));
 app.use("/api/payment", require("./src/routes/paymentRoutes"));
 app.use("/api/reviews", require("./src/routes/reviewRoutes"));
+app.use("/api/shipment", require("./src/routes/shipmentRoutes"));
+
 
 
 app.use((req, res) => {

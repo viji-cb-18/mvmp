@@ -1,8 +1,7 @@
 const Vendor = require("../models/Vendor");
 const User = require("../models/User");
 const multer = require("multer");
-const { cloudinary } = require("../config/cloudinaryconfig");
-
+const { uploadToCloudinary } = require("../config/cloudinaryconfig");
 
 exports.getVendors = async (req, res) => {
     try {
@@ -119,7 +118,9 @@ exports.uploadStoreLogo = async (req, res) => {
     try {
         if (!req.file) return res.status(400).json({ error: "No file uploaded" });
 
-        const vendor = await Vendor.findByIdAndUpdate( {vendorId: req.user_id }, { storeLogo: req.file.path}, { new: true });
+        const imageUrl = await uploadToCloudinary(req.file.path);
+
+        const vendor = await Vendor.findByIdAndUpdate(req.user_id, { storeLogo: imageUrl}, { new: true });
 
         res.staus(200).json({ msg: "Store logo uploaded successfully", vendor });
     } catch (error) {

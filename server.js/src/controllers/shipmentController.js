@@ -61,7 +61,7 @@ exports.getShipments = async (req, res) => {
 
 exports.getShipmentById = async (req, res) => {
     try {
-        const shipment = await Shipment.findById(req.params.shipmentId).populate("orderId", "totalAmount orderStatus");
+        const shipment = await Shipment.findById(req.params.shipmentId).populate("orderId", "totalAmount orderStatus vendorId");
 
         if (!shipment) {
             return res.status(404).json({ error: "Shipment not found" });
@@ -82,10 +82,14 @@ exports.updateShipmentStatus = async (req, res) => {
         const { shipmentId } = req.params;
         const { status } = req.body;
 
-        const updatedShipment = await Shipment.findByIdAndUpdate(shipmentId, { status }, { new: true });
+        const updatedShipment = await Shipment.findById(shipmentId).populate("orderId", "vendorId");
 
         if (!updatedShipment) {
             return res.status(404).json({ error: "Shipment not found" });
+        }
+
+        if (!updatedShipment.orderId) {
+            return res.status(400).json({ error: "Shipment is missing an associated order" });
         }
 
         if (req.user.role === "vendor" && updatedShipment.orderId.vendorId.toString() !== req.user._id.toString()) {
@@ -100,6 +104,7 @@ exports.updateShipmentStatus = async (req, res) => {
         res.status(500).json({ error: "Failed to update shipment status", details: error.message });
     }
 };
+
 
 exports.deleteShipment = async (req, res) => {
     try {

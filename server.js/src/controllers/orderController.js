@@ -2,8 +2,10 @@ const Order = require("../models/Order");
 const Cart = require("../models/Cart");
 
 
-exports.createOrder = async (req, res) =>{
+exports.createOrder = async (req, res) => {
     try {
+        console.log("Incoming Order Request:", req.body);
+        console.log("Authenticated User:", req.user);
 
         if (req.user.role !== "customer") {
             return res.status(403).json({ msg: "Access denied! Only customers can place orders" });
@@ -11,17 +13,25 @@ exports.createOrder = async (req, res) =>{
 
         const { customerId, vendorId, products, totalAmount } = req.body;
 
+        if (!customerId || !vendorId || !products || products.length === 0 || !totalAmount) {
+            return res.status(400).json({ msg: "Missing required fields" });
+        }
+
         const order = new Order({ customerId, vendorId, products, totalAmount });
         await order.save();
+
+        console.log("Order Created Successfully:", order);
 
         await Cart.findOneAndDelete({ userId: customerId });
 
         res.status(201).json({ msg: "Order created", order });
 
-    }catch (error) {
-        res.status(500).json({ msg: "Failed to create order"});
+    } catch (error) {
+        console.error("Error in createOrder:", error);
+        res.status(500).json({ msg: "Failed to create order", error: error.message });
     }
 };
+
 
 
 exports.getOrder = async (req, res) =>{
@@ -60,7 +70,10 @@ exports.getOrder = async (req, res) =>{
 
 exports.getOrderById = async (req, res) =>{
     try {
-        const order = await Order.findById(req.params.orderId).populate("customerId vendorId products.productId");
+        const order = await Order.findById(req.params.orderId)
+        .populate("customerId", "name email")
+        .populate("vendorId", "storeName")
+        .populate("products.productId");
         if(!order) {
             return res.status(404).json({ msg: "Order not found"});
         }
@@ -81,35 +94,51 @@ exports.getOrderById = async (req, res) =>{
 };
 
 
+
 exports.updateOrderStatus = async (req, res) => {
     try {
-       const { orderId } = req.params;
-       const { orderStatus, trackingNumber, carrier } = req.body;
+        const { orderId } = req.params;
+        const { orderStatus, trackingNumber, carrier } = req.body;
 
-       const order = await Order.findByIdAndUpdate(orderId);
-       if( !order){ 
-        return res.status(404).json({ msg: "Order not found "});
-       }
+        console.log("Incoming Order Update Request:", { orderId, orderStatus, trackingNumber, carrier });
+        console.log("Authenticated User:", req.user);
 
-       if (req.user.role !== "vendor") {
-        return res.status(403).json({ msg: "Access denied! Only vendors can update order status" });
-       }
+        if (!orderId || !orderStatus) {
+            return res.status(400).json({ msg: "Missing orderId or orderStatus" });
+        }
 
-       order.orderStatus = orderStatus;
+        const order = await Order.findById(orderId);
+        if (!order) {
+            console.error("Order not found");
+            return res.status(404).json({ msg: "Order not found" });
+        }
 
-       if (trackingNumber && carrier) {
-        await Shipment.findOneAndUpdate(
-            { orderId },
-            { trackingNumber, carrier, status: orderStatus },
-            { upsert: true }
-        );
-       }
+        if (req.user.role !== "vendor") {
+            console.error("Access Denied: Only vendors can update order status");
+            return res.status(403).json({ msg: "Access denied! Only vendors can update order status" });
+        }
 
-       res.json({ message: "Order status updated", order });
-   }catch (error) {
-    res.status(500).json({ msg: "Failed to update order status"});
-   }
-};   
+        order.orderStatus = orderStatus;
+
+        if (trackingNumber && carrier) {
+            console.log("Updating shipment details...");
+            await Shipment.findOneAndUpdate(
+                { orderId },
+                { trackingNumber, carrier, status: orderStatus },
+                { upsert: true }
+            );
+        }
+
+        await order.save();
+        console.log("Order Updated Successfully:", order);
+
+        res.json({ message: "Order status updated", order });
+    } catch (error) {
+        console.error("Error in updateOrderStatus:", error);
+        res.status(500).json({ msg: "Failed to update order status", error: error.message });
+    }
+};
+
 
 exports.deleteOrder = async (req, res) => {
     try {

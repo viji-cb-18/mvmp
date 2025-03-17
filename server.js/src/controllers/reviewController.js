@@ -5,19 +5,25 @@ const { cloudinary } = require("../config/cloudinaryconfig");
 
 exports.addReview = async (req, res) => {
     try {
-        const { userId, productId, rating,comment } = req.body;
+        const { productId, rating, comment } = req.body;
 
         if (!productId || !rating) {
             return res.status(400).json({ error: "Product ID and rating are required" });
         }
 
-        const review = new Review({ 
+        const reviewData = { 
             userId: req.user._id,
             productId, 
             rating, 
             comment 
-        });
+        };
 
+        if (req.file) {
+            const uploadedImage = await uploadToCloudinary(req.file.path);
+            reviewData.image = uploadedImage;
+        }
+        
+        const review = new Review(reviewData);
         await review.save();
         res.status(201).json({ message: "Review added successfully", review});
     } catch (error) {
@@ -79,18 +85,24 @@ exports.updateReview = async (req, res) => {
         const { reviewId } = req.params;
         const { rating, comment } = req.body;
 
-        const updatedReview = await Review.findByIdAndUpdate(reviewId);
+        const review = await Review.findByIdAndUpdate(reviewId);
 
-        if (!updatedReview) {
+        if (!review) {
             return res.status(404).json({ error: "Review not found" });
         }
 
-        if (req.user.role !== "admin" && req.user._id.toString() !== updatedReview.userId.toString()) {
+        if (req.user.role !== "admin" && req.user._id.toString() !== review.userId.toString()) {
             return res.status(403).json({ error: "Access denied! You can only update your own reviews" });
         }
 
-        updatedReview.rating = rating || updatedReview.rating;
-        updatedReview.comment = comment || updatedReview.comment;
+        if (rating)  review.rating = rating;
+        if (comment) review.comment = comment;
+
+        if (req.file) {
+            const uploadedImage = await uploadToCloudinary(req.file.path);
+            review.image = uploadedImage;
+        }
+
         await updatedReview.save();
 
         res.status(200).json({ message: "Review updated successfully", updatedReview });
@@ -118,4 +130,17 @@ exports.deleteReview = async (req, res) => {
     } catch (error) {
         res.status(500).json({ error: "Failed to delete review", details: error.message });
     }
+};
+
+exports.uploadReviewImage = async (req, res) => {
+    try {
+        if (!req.file) return res.status(400).json({ error: "No file uploaded" });
+
+        const uploadedImage = await uploadToCloudinary(req.file.path);
+
+       res.status(200).json({ message: "Review image uploaded successfully", imageUrl: uploadedImage});
+    } catch (error) {
+        res.status(500).json({ error: "Image upload failed", details: error.message });
+    }
+
 };
