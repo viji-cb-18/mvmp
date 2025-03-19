@@ -157,7 +157,7 @@ exports.uploadStoreLogo = async (req, res) => {
     }
 }
 
-/*exports.manageStoreInfo = async (req, res) => {
+exports.manageStoreInfo = async (req, res) => {
     try {
         const vendor = await Vendor.findByIdAndUpdate(req.user._id, req.body, { new: true });
 
@@ -167,6 +167,6 @@ exports.uploadStoreLogo = async (req, res) => {
     } catch (error) {
         res.status(500).json({ error: "Failed to update store info", details: error.message });
     }
-};*/
+};
 
 

@@ -7,8 +7,7 @@ const shipmentSchema = new mongoose.Schema({
     trackingNumber: { type: String, required: true },
     carrier: { type: String, required: true },
     status: { type: String, enum: ["Processing", "In Transit", "Delivered", "Returned"], default: "Processing" }
-    
-  
+      
 });    
 
 module.exports = mongoose.model("Shipment", shipmentSchema);

@@ -2,8 +2,6 @@ const Order = require("../models/Order");
 const Cart = require("../models/Cart");
 const Shipment = require("../models/Shipment");
 
-
-
 exports.createOrder = async (req, res) => {
     try {
         console.log("Incoming Order Request:", req.body);
@@ -33,7 +31,6 @@ exports.createOrder = async (req, res) => {
         res.status(500).json({ msg: "Failed to create order", error: error.message });
     }
 };
-
 
 
 exports.getOrder = async (req, res) =>{
@@ -175,7 +172,6 @@ exports.cancelOrder = async (req, res) => {
         }
 
 
-
         if (req.user.role === "customer") {
             if (order.customerId.toString() !== req.user._id.toString()) {
                 return res.status(403).json({ error: "Access denied! You can only cancel your own orders" });
@@ -185,8 +181,7 @@ exports.cancelOrder = async (req, res) => {
                 return res.status(400).json({ error: "You can only cancel orders before they are shipped" });
             }
         }
-        
-    
+            
         order.orderStatus = "Cancelled";
         await order.save();
 
