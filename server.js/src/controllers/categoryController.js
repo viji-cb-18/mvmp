@@ -4,10 +4,9 @@ const { uploadToCloudinary } = require("../config/cloudinaryconfig");
 
 exports.addParentCategory = async (req, res) => {
     try {
-        const { name } = req.body;
-        const categoryImage = "";
+        let categoryImage = null;
 
-        if (!name) {
+        if (!req.body.name) {
             return res.status(400).json({ msg: "Category name is required" });
         }
 
@@ -15,7 +14,12 @@ exports.addParentCategory = async (req, res) => {
             categoryImage = await uploadToCloudinary(req.file.path);
         }
 
-        const parentCategory = new Category({ name, parentCategory: null, categoryImage });
+        const parentCategory = new Category({ 
+            name: req.body.name, 
+            parentCategory: null, 
+            categoryImage 
+        });
+
         await parentCategory.save();
 
         res.status(201).json({ msg: "Category added successfully", category: parentCategory });
@@ -26,16 +30,16 @@ exports.addParentCategory = async (req, res) => {
 
 exports.addSubCategory = async (req, res) => {
     try {
-        const { name, parentCategory} = req.body;
-        const categoryImage = "";
+        let categoryImage = null;
+        const { name, parentCategory } = req.body;
 
-        if (!name || ! parentCategory) {
-            return res.status(400).json({ msg: "Subcategory name  and parent are required" });
+        if (!name || !parentCategory) {
+            return res.status(400).json({ msg: "Subcategory name and parent category are required" });
         }
 
         const parentCat = await Category.findById(parentCategory);
         if (!parentCat) {
-            return res.status(400).json({ msg: "Invalid parentcategory ID"});
+            return res.status(400).json({ msg: "Invalid parent category ID" });
         }
 
         if (req.file) {
@@ -45,17 +49,20 @@ exports.addSubCategory = async (req, res) => {
         const newCategory = new Category({ name, parentCategory, categoryImage });
         await newCategory.save();
 
-        const categoryWithParent = await Category.findById(newCategory._id).populate("parentCategory", "name");
+        parentCat.subcategories.push(newCategory._id);
+        await parentCat.save();
 
-        res.status(201).json({ msg: "Category added successfully", category: parentCategory });
+        res.status(201).json({ msg: "Subcategory added successfully", category: newCategory });
     } catch (error) {
-        res.status(500).json({ msg: "Failed to create category", details: error.message });
+        res.status(500).json({ msg: "Failed to create subcategory", details: error.message });
     }
 };
 
+
 exports.getCategory = async (req, res) => {
     try {
-        const categories = await Category.find({ parentCategory: null }).populate("subcategories", "name categoryImage");
+        const categories = await Category.find({ parentCategory: null })
+            .populate("subcategories", "name categoryImage");
 
         if (!categories.length) {
             return res.status(404).json({ msg: "No categories found" });
@@ -67,11 +74,12 @@ exports.getCategory = async (req, res) => {
     }
 };
 
+
 exports.getCategoryById = async (req, res) => {
     try {
         const category = await Category.findById(req.params.categoryId)
-        .populate("parentCategory", "name")
-        .populate("subcategories", "name categoryImage");
+            .populate("parentCategory", "name")
+            .populate("subcategories", "name categoryImage");
 
         if (!category) {
             return res.status(404).json({ msg: "Category not found" });

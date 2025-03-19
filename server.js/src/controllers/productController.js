@@ -3,8 +3,7 @@ const Product = require("../models/Product");
 const Category = require("../models/Category");
 const multer = require("multer");
 const { cloudinary } = require("../config/cloudinaryconfig");
-
-
+const Order = require("../models/Order");
 
 exports.addProduct = async (req, res) => {
     try {
@@ -144,13 +143,90 @@ exports.uploadProductImage = async (req, res) => {
             return res.status(400).json({ error: "No file uploaded" });
         }
 
-        const imageUrls = await Promise.all(
-            req.files.map(async (file) => {
-                return await uploadToCloudinary(file.path);
-            })
-        )
+        const imageUrls = await uploadToCloudinary(req.files.path);
+        const { productId } = req.params;
+        
+         const product = await Product.findByIdAndUpdate(productId, { $push: {images: imageUrls }}, { new: true });
+        
         res.staus(200).json({ msg: "Product image uploaded successfully", images: imageUrls });
     } catch (error) {
         res.status(500).json({ error: "Image uploaded failed", details: error.message });
     }
 }
+
+exports.getProductsByCategory = async (req, res) => {
+    try {
+        const { categoryId } = req.params;
+
+        if (!mongoose.Types.ObjectId.isValid(categoryId)) {
+            return res.status(400).json({ msg: "Invalid category ID format" });
+        }
+
+        const products = await Product.find({ category: categoryId })
+            .populate("category", "name") 
+            .populate("vendorId", "name"); 
+
+        if (!products.length) {
+            return res.status(404).json({ msg: "No products found for this category" });
+        }
+
+        res.status(200).json(products);
+    } catch (error) {
+        console.error("Error fetching products by category:", error);
+        res.status(500).json({ msg: "Internal Server Error", details: error.message });
+    }
+};
+
+
+
+exports.getProductsByVendor = async (req, res) => {
+    try {
+        const { vendorId } = req.params;
+        const products = await Product.find({ vendorId });
+
+        res.status(200).json(products);
+    } catch (error) {
+        res.status(500).json({ error: "Failed to fetch products", details: error.message });
+    }
+};
+
+/*exports.getBestSellingProducts = async (req, res) => {
+    try {
+     
+        const orders = await Order.find().populate("products.productId");
+
+        const productSales = {};
+        orders.forEach(order => {
+            order.products.forEach(({ productId, quantity }) => {
+                if (!productSales[productId]) {
+                    productSales[productId] = 0;
+                }
+                productSales[productId] += quantity;
+            });
+        });
+ 
+        const sortedProducts = Object.entries(productSales)
+            .sort(([, salesA], [, salesB]) => salesB - salesA)
+            .slice(0, 10); 
+
+        const bestSellers = await Promise.all(
+            sortedProducts.map(async ([productId, totalSold]) => {
+                const product = await Product.findById(productId);
+                return {
+                    _id: product._id,
+                    name: product.name,
+                    price: product.price,
+                    image: product.images?.[0], 
+                    totalSold
+                };
+            })
+        );
+
+        res.status(200).json(bestSellers);
+    } catch (error) {
+        console.error("Error fetching best-sellers:", error);
+        res.status(500).json({ error: "Failed to fetch best-selling products", details: error.message });
+    }
+};*/
+
+

@@ -9,7 +9,7 @@ router.get("/", reviewController.getAllReviews);
 router.get("/:reviewId", reviewController.getReviewById);
 router.put("/:reviewId",authMiddleware.authenticateUser, uploadMiddleware.single("images"), reviewController.updateReview);
 router.delete("/:reviewId",authMiddleware.authenticateUser, reviewController.deleteReview);
-router.post("/upload-image", authMiddleware.authenticateUser, uploadMiddleware.array("images", 5), reviewController.addReview);
+router.post("/upload-image/:reviewId", authMiddleware.authenticateUser, uploadMiddleware.array("images", 5), reviewController.addReview);
 
 
 module.exports = router;

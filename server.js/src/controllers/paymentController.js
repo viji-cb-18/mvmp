@@ -23,44 +23,7 @@ exports.createPayment = async (req, res) => {
         res.status(500).json({ error: "Payment failed" });
     }
 };
-
-/*
-exports.getPayments = async (req, res) => {
-    try {
-        const { page = 1, limit = 10, sortBy = "createdAt"} = req.query;
-
-        const filter = {};
-        if (paymentStatus) filter.paymentStatus = paymentStatus;
-        if (customerId) filter.customerId = customerId;
-        if (vendorId) filter.vendorId = vendorId;
-
-        const payments = await Payment.find()
-        .populate("orderId", "totalAmount", "orderStatus" )
-        .populate("customerId", "name email" )
-        .populate("vendorId", "storeName" )
-        .sort({ [sortBy]: order === "asc" ? 1 : -1 }) 
-        .limit(parseInt(limit))
-        .skip((parseInt(page) - 1) * parseInt(limit));
-
-        const total = await Payment.countDocuments(filter);
-
-        if (!payments.length) {
-            return res.status(404).json({ error: "No payments found" });
-        }
-
-        res.status(200).json({
-            page: parseInt(page),
-            limit: parseInt(limit),
-            totalPages: Math.ceil(total / limit),
-            totalItems: total,
-            data: payments
-        });
-
-    } catch (error) {
-        console.error("Error in createPayment:", error);
-        res.status(500).json({ error: "Failed to fetch payments" });
-    }
-};*/
+     
 
 exports.getPayments = async (req, res) => {
     try {

@@ -7,12 +7,15 @@ const { uploadMiddleware } = require("../config/cloudinaryconfig");
 
 router.post("/register", authController.registerUser);
 router.post("/login", authController.loginUser);
-router.post("/logout", authMiddleware.authenticateUser, authController.logoutUser);
-router.post("/profile", authMiddleware.authenticateUser, uploadMiddleware.single("profileImage"), authController.uploadProfileImage)
+
+router.post("/profile", authMiddleware.authenticateUser, uploadMiddleware.single("profileImage"), authController.uploadProfileImage);
+
+router.get("/user-profile",authMiddleware.authenticateUser, authController.getUserprofile);
+router.put("/update-profile",authMiddleware.authenticateUser, authController.updateUserProfile);
+router.put("/change-password", authMiddleware.authenticateUser, authController.changePassword);
+
 router.get("/",authMiddleware.authenticateUser, authMiddleware.adminOnly, authController.getAllUsers);
 router.get("/:userId",authMiddleware.authenticateUser, authController.getUserById);
-router.put("/:userId",authMiddleware.authenticateUser, authController.updateUser);
-router.put("/change-password", authMiddleware.authenticateUser, authController.changePassword);
 router.delete("/:userId",authMiddleware.authenticateUser, authMiddleware.adminOnly, authController.deleteUser);
 
 module.exports = router;

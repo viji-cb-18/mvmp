@@ -4,7 +4,7 @@ const categoryController = require("../controllers/categoryController");
 const authMiddleware  = require("../middleware/authMiddleware");
 const { uploadMiddleware } = require("../config/cloudinaryconfig");
 
-router.post("/parent",authMiddleware.authenticateUser,authMiddleware.vendorOnly, uploadMiddleware.single("image"), categoryController.addParentCategory);
+router.post("/parent",authMiddleware.authenticateUser,authMiddleware.adminOnly, uploadMiddleware.single("image"), categoryController.addParentCategory);
 router.post("/sub",authMiddleware.authenticateUser,authMiddleware.vendorOnly, uploadMiddleware.single("image"), categoryController.addSubCategory);
 router.get("/", categoryController.getCategory);
 router.get("/:categoryId", categoryController.getCategoryById);

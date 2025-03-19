@@ -8,10 +8,14 @@ const { uploadToCloudinary } = require("../config/cloudinaryconfig");
 
 exports.registerUser = async (req, res) => {
     try {
-        const { name, email, password, role, createdBy } = req.body;
+        const { name, email, phone, password, role, createdBy } = req.body;
 
-        if (!name || !email || !password || !role) {
+        if (!name || !email || !phone || !password || !role) {
             return res.status(400).json({ msg: "All fields are required" });
+        }
+
+        if (!phone.match(/^\d{10}$/)) {
+            return res.status(400).json({ msg: "Phone number must be 10 digits" });
         }
 
         const userExists = await User.findOne({ email });
@@ -24,10 +28,9 @@ exports.registerUser = async (req, res) => {
         const newUser = new User({
             name,
             email,
+            phone,
             password: hashedPassword,
-            confirmPassword: hashedPassword,
             role,
-            createdBy: role === "admin" ? null : createdBy 
         });
 
         await newUser.save();
@@ -73,21 +76,6 @@ exports.loginUser = async (req, res) => {
 };
 
 
-exports.uploadProfileImage = async (req, res) => {
-    try {
-        if (!req.file) return res.status(400).json({ error: "No file uploaded" });
-
-        const imageUrl = await uploadToCloudinary(req.file.path);
-
-        const user = await User.findByIdAndUpdate(req.user_id, { profileImage: imageUrl}, { new: true });
-
-        res.staus(200).json({ msg: "Profile image uploaded successfully", user });
-    } catch (error) {
-        res.status(500).json({ error: "Image uploaded failed", details: error.message });
-    }
-}
-
-
 exports.getAllUsers = async (req, res) => {
      try {
         if (req.user.role !== "admin") {
@@ -119,19 +107,15 @@ exports.getAllUsers = async (req, res) => {
      }
 }
 
-exports.logoutUser = async (req, res) => {
-    try {
-        res.status(200).json({ msg: "Logout successful. Token invalidated on the client side." });
-    } catch (error) {
-        res.status(500).json({ msg: "Internal server error" });
-    }
-};
-
 exports.getUserById =async (req, res) => {
     try {
         const { userId } = req.params;
 
-        const user = await User.findById(userId);
+        if (req.user.role !== "admin" && req.user.userId !== userId) {
+            return res.status(403).json({ msg: "Access denied! You can only view your own profile" });
+        }
+
+        const user = await User.findById(userId).select("-password");
         if (!user) return res.status(404).json({ msg: "User not found" });
 
         res.status(200).json(user);
@@ -140,35 +124,52 @@ exports.getUserById =async (req, res) => {
     }
 };
 
-exports.updateUser =async (req, res) => {
+
+exports.getUserprofile =async (req, res) => {
     try {
-        const { userId } = req.params;
-        
-        if (req.user.role !== "admin" && req.user._id.toString() !== userId) {
-            return res.status(403).json({ msg: "Access denied!" });
+        const user = await User.findById(req.user._id).select("-password");
+
+        if (!user) {
+            return res.status(404).json({ msg: "User not found" });
         }
+        res.status(200).json(user);
 
-        if (req.body.password) {
-            req.body.password = await bcrypt.hash(req.body.password, 10);
-        }
-
-        const updateUser = await User.findByIdAndUpdate(userId, req.body, {new: true});
-        if (!updateUser) return res.status(404).json({ error: "User not found" });
-
-        res.status(200).json({ msg: "User updated successfully", updateUser });
     } catch (error) {
+        console.error("Error on getuserprofile ", error);
+        res.status(500).json({ msg: "Internal server error" });
+    }
+}
+
+exports.updateUserProfile =async (req, res) => {
+    try {
+        if (!req.user) {
+            return res.status(401).json({ msg: "Unauthorized! User not found" });
+        }
+
+        const updatedUser = await User.findByIdAndUpdate(
+            req.user._id,
+            { $set: req.body },
+            { new: true }
+        );
+
+        if (!updatedUser) {
+            return res.status(404).json({ msg: "User not found" });
+        }
+
+        res.status(200).json({ msg: "User updated successfully", updatedUser });
+    } catch (error) {
+        console.error("Error in updateUserProfile:", error);
         res.status(500).json({ msg: "Internal server error" });
     }
 };
 
 exports.changePassword = async (req, res) => {
     try {
-        const {oldPassword, newPassword, confirmNewPassword } = req.body;
-        const userId = req.user.id;
+        const {oldPassword, newPassword , confirmNewPassword } = req.body;
+        const userId = req.user.userId;
 
-        const user = await User.findById(userId);
-        console.log("User Found:", user);
-
+        const user = await User.findById(req.user._id);
+    
         if (!user) {
             return res.status(404).json({ msg: "User not found" });
         }
@@ -178,15 +179,11 @@ exports.changePassword = async (req, res) => {
             return res.status(400).json({ error: "Incorrect old password" });
         }
 
-        if (newPassword !== confirmNewPassword) {
-            return res.status(400).json({ error: "New passwords not match" });
-        }
-        
-        if (newPassword.length < 6) {
-            return res.status(400).json({ error: "Password must be at least 6 characters long" });
-        }
+        if (newPassword !== confirmNewPassword) return res.status(400).json({ error: "Passwords do not match" });
 
-        user.password = await bcrypt.hash(newPassword, 10);
+        if (newPassword.length < 6) return res.status(400).json({ error: "Password must be at least 6 characters long" });
+
+        user.password = await bcrypt.hash(newPassword,10) 
 
         await user.save();
 
@@ -219,3 +216,18 @@ exports.deleteUser =async (req, res) => {
     }
 };
 
+
+exports.uploadProfileImage = async (req, res) => {
+    try {
+        if (!req.file) return res.status(400).json({ error: "No file uploaded" });
+
+        const imageUrl = await uploadToCloudinary(req.file.path);
+
+        const user = await User.findByIdAndUpdate(req.user_id, { profileImage: imageUrl}, { new: true });
+
+        res.staus(200).json({ msg: "Profile image uploaded successfully", profileImage: user.profileImage });
+
+    } catch (error) {
+        res.status(500).json({ error: "Image uploaded failed", details: error.message });
+    }
+}

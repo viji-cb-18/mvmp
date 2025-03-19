@@ -2,8 +2,11 @@ const Vendor = require("../models/Vendor");
 const User = require("../models/User");
 const multer = require("multer");
 const { uploadToCloudinary } = require("../config/cloudinaryconfig");
+const bcrypt = require("bcryptjs");
 
-exports.getVendors = async (req, res) => {
+
+
+exports.getAllVendors = async (req, res) => {
     try {
         if (req.user.role !== "admin") {
             return res.status(403).json({ error: "Access denied! Admins only" });
@@ -46,18 +49,13 @@ exports.getVendors = async (req, res) => {
 };
 
 
-exports.getVendorById = async (req, res) => {
+exports.getVendorProfile = async (req, res) => {
     try {
-        const { vendorId } = req.params;
 
-        const vendor = await User.findById(vendorId);
+        const vendor = await User.findById(req.user._id);
 
-        if (!vendor || vendor.role !== "vendor") {
+        if (!vendor) {
             return res.status(404).json({ error: "Vendor not found" });
-        }
-
-        if (req.user.role !== "admin" && req.user._id.toString() !== vendor._id.toString()) {
-            return res.status(403).json({ error: "Access denied! You can only view your own vendor profile" });
         }
 
         res.status(200).json(vendor);
@@ -69,29 +67,60 @@ exports.getVendorById = async (req, res) => {
 
 
 
-exports.updateVendor = async (req, res) => {
+exports.updateVendorProfile = async (req, res) => {
     try {
-        const { vendorId } = req.params;
-
-        const vendor = await User.findById(vendorId);
-
-        if (!vendor || vendor.role !== "vendor") {
+        const vendor = await User.findByIdAndUpdate(req.user._id, req.body, { new: true });
+        if (!vendor) {
             return res.status(404).json({ error: "Vendor not found" });
         }
 
-        if (req.user.role !== "admin" && req.user._id.toString() !== vendor._id.toString()) {
-            return res.status(403).json({ error: "Access denied! You can only update your own vendor profile" });
-        }
-
-        const updatedVendor = await User.findByIdAndUpdate(vendorId, req.body, { new: true });
-
-        res.status(200).json({ message: "Vendor updated successfully", updatedVendor });
+        res.status(200).json({ message: "Vendor updated successfully", vendor });
     } catch (error) {
         console.error("Error in updateVendor:", error);
         res.status(500).json({ error: "Internal Server Error", details: error.message });
     }
 };
 
+exports.changeVendorPassword = async (req, res) => {
+    try {
+        const { oldPassword, newPassword, confirmNewPassword } = req.body;
+
+        if (!req.user || req.user.role !== "vendor") {
+            return res.status(403).json({ error: "Access denied! Vendors only" });
+        }
+
+        const vendorId = req.user._id;
+        console.log("Vendor ID from Token:", vendorId);
+
+        const vendor = await User.findById(vendorId);
+        console.log("Vendor Data from DB:", vendor);
+
+        if (!vendor) {
+            return res.status(404).json({ error: "Vendor not found" });
+        }
+
+        if (!vendor.password) {
+            return res.status(500).json({ error: "Vendor password not set" });
+        }
+
+        const isMatch = await bcrypt.compare(oldPassword, vendor.password);
+        if (!isMatch) {
+            return res.status(400).json({ error: "Incorrect old password" });
+        }
+
+        if (newPassword !== confirmNewPassword) {
+            return res.status(400).json({ error: "New passwords do not match" });
+        }
+
+        vendor.password = await bcrypt.hash(newPassword, 10);
+        await vendor.save();
+
+        res.status(200).json({ message: "Password updated successfully" });
+    } catch (error) {
+        console.error("Error in changeVendorPassword:", error);
+        res.status(500).json({ error: "Failed to change password", details: error.message });
+    }
+};
 
 exports.deleteVendor = async (req, res) => {
     try {
@@ -127,3 +156,17 @@ exports.uploadStoreLogo = async (req, res) => {
         res.status(500).json({ error: "Image uploaded failed", details: error.message });
     }
 }
+
+/*exports.manageStoreInfo = async (req, res) => {
+    try {
+        const vendor = await Vendor.findByIdAndUpdate(req.user._id, req.body, { new: true });
+
+        if (!vendor) return res.status(404).json({ error: "Vendor not found" });
+
+        res.status(200).json({ message: "Store information updated successfully", vendor });
+    } catch (error) {
+        res.status(500).json({ error: "Failed to update store info", details: error.message });
+    }
+};*/
+
+

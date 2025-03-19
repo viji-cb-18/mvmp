@@ -82,28 +82,41 @@ exports.updateShipmentStatus = async (req, res) => {
         const { shipmentId } = req.params;
         const { status } = req.body;
 
-        const updatedShipment = await Shipment.findById(shipmentId).populate("orderId", "vendorId");
+        const shipment = await Shipment.findById(shipmentId).populate("orderId", "vendorId");
 
-        if (!updatedShipment) {
+       
+        if (!shipment) {
             return res.status(404).json({ error: "Shipment not found" });
         }
 
-        if (!updatedShipment.orderId) {
+        console.log("Shipment Data:", shipment);
+
+
+        if (!shipment.orderId) {
             return res.status(400).json({ error: "Shipment is missing an associated order" });
         }
 
-        if (req.user.role === "vendor" && updatedShipment.orderId.vendorId.toString() !== req.user._id.toString()) {
-            return res.status(403).json({ error: "Access denied! You can only update your own shipments" });
+        if (req.user.role === "vendor") {
+            if (status !== "In Transit") {
+                return res.status(403).json({ error: "Vendors can only update shipments to 'In Transit'" });
+            }
+
+            if (!shipment.orderId.vendorId || shipment.orderId.vendorId.toString() !== req.user._id.toString()) {
+                return res.status(403).json({ error: "Access denied! You can only update your own shipments" });
+            }
         }
 
-        updatedShipment.status = status;
-        await updatedShipment.save();
+        shipment.status = status;
+        await shipment.save();
 
-        res.status(200).json({ message: "Shipment status updated successfully", updatedShipment });
+        res.status(200).json({ message: "Shipment status updated successfully", shipment });
+
     } catch (error) {
+        console.error("Error in updateShipmentStatus:", error);
         res.status(500).json({ error: "Failed to update shipment status", details: error.message });
     }
 };
+
 
 
 exports.deleteShipment = async (req, res) => {

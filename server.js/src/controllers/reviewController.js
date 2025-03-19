@@ -103,9 +103,9 @@ exports.updateReview = async (req, res) => {
             review.image = uploadedImage;
         }
 
-        await updatedReview.save();
+        await review.save();
 
-        res.status(200).json({ message: "Review updated successfully", updatedReview });
+        res.status(200).json({ message: "Review updated successfully", review });
     } catch (error) {
         res.status(500).json({ error: "Failed to update review", details: error.message });
     }
@@ -137,6 +137,16 @@ exports.uploadReviewImage = async (req, res) => {
         if (!req.file) return res.status(400).json({ error: "No file uploaded" });
 
         const uploadedImage = await uploadToCloudinary(req.file.path);
+
+        const review = await Review.findByIdAndUpdateO(
+            req.params.reviewId,
+            { image: uploadedImage },
+            { new: true }
+        );
+
+        if (!review) {
+            return res.status(404).json({ error: "Review not found" });
+        }
 
        res.status(200).json({ message: "Review image uploaded successfully", imageUrl: uploadedImage});
     } catch (error) {

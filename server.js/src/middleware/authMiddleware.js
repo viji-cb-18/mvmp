@@ -1,6 +1,7 @@
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
 const User = require("../models/User");
+const bcrypt = require("bcryptjs");
 
 exports.authenticateUser = async (req, res, next) => {
     try {
@@ -34,7 +35,7 @@ exports.adminOnly = (req, res, next) => {
 };
 
 exports.vendorOnly = (req, res, next) => {
-    if (req.user.role !== "vendor") {
+    if (!req.user || req.user.role !== "vendor") {
         return res.status(403).json({ msg: "Access denied! Vendors only" });
     }
     next();

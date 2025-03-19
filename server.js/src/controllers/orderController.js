@@ -1,5 +1,7 @@
 const Order = require("../models/Order");
 const Cart = require("../models/Cart");
+const Shipment = require("../models/Shipment");
+
 
 
 exports.createOrder = async (req, res) => {
@@ -98,13 +100,10 @@ exports.getOrderById = async (req, res) =>{
 exports.updateOrderStatus = async (req, res) => {
     try {
         const { orderId } = req.params;
-        const { orderStatus, trackingNumber, carrier } = req.body;
+        const { status } = req.body;
 
-        console.log("Incoming Order Update Request:", { orderId, orderStatus, trackingNumber, carrier });
-        console.log("Authenticated User:", req.user);
-
-        if (!orderId || !orderStatus) {
-            return res.status(400).json({ msg: "Missing orderId or orderStatus" });
+        if (!status) {
+            return res.status(400).json({ error: "Order status is required" });
         }
 
         const order = await Order.findById(orderId);
@@ -113,24 +112,19 @@ exports.updateOrderStatus = async (req, res) => {
             return res.status(404).json({ msg: "Order not found" });
         }
 
-        if (req.user.role !== "vendor") {
-            console.error("Access Denied: Only vendors can update order status");
-            return res.status(403).json({ msg: "Access denied! Only vendors can update order status" });
+        if (status === "Shipped") {
+            const shipment = await Shipment.findOne({ orderId });
+            if (!shipment) {
+                return res.status(400).json({ error: "Cannot mark as Shipped without an active shipment" });
+            }
         }
 
-        order.orderStatus = orderStatus;
-
-        if (trackingNumber && carrier) {
-            console.log("Updating shipment details...");
-            await Shipment.findOneAndUpdate(
-                { orderId },
-                { trackingNumber, carrier, status: orderStatus },
-                { upsert: true }
-            );
+        if (req.user.role === "customer") {
+            return res.status(403).json({ error: "Access denied! Customers cannot update order status" });
         }
 
+        order.orderStatus = status;
         await order.save();
-        console.log("Order Updated Successfully:", order);
 
         res.json({ message: "Order status updated", order });
     } catch (error) {
@@ -170,6 +164,18 @@ exports.cancelOrder = async (req, res) => {
             return res.status(404).json({ error: "Order not found" });
         }
 
+        const shipment = await Shipment.findOne({ orderId });
+
+        if (shipment && shipment.status === "In Transit") {
+            return res.status(400).json({ error: "Cannot cancel an order that has already been shipped" });
+        }
+
+        if (order.orderStatus === "Cancelled") {
+            return res.status(400).json({ error: "Order has already been cancelled" });
+        }
+
+
+
         if (req.user.role === "customer") {
             if (order.customerId.toString() !== req.user._id.toString()) {
                 return res.status(403).json({ error: "Access denied! You can only cancel your own orders" });
@@ -180,11 +186,7 @@ exports.cancelOrder = async (req, res) => {
             }
         }
         
-        if (req.user.role === "admin") {
-            order.orderStatus = "Cancelled";
-            await order.save();
-            return res.status(200).json({ msg: "Order cancelled successfully", order });
-        }
+    
         order.orderStatus = "Cancelled";
         await order.save();
 
