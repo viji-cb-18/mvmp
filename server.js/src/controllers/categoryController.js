@@ -147,7 +147,7 @@ exports.uploadCategoryImage = async (req, res) => {
 
         const category = await Category.findByIdAndUpdate(req.params.categoryId, { categoryImage: req.file.path}, { new: true });
 
-        res.staus(200).json({ msg: "Category image uploaded successfully", categoryr });
+        res.staus(200).json({ msg: "Category image uploaded successfully", category });
     } catch (error) {
         res.status(500).json({ error: "Image uploaded failed", details: error.message });
     }

@@ -219,15 +219,25 @@ exports.deleteUser =async (req, res) => {
 
 exports.uploadProfileImage = async (req, res) => {
     try {
-        if (!req.file) return res.status(400).json({ error: "No file uploaded" });
+        if (!req.file) {
+            return res.status(400).json({ error: "No file uploaded" });
+        }
 
-        const imageUrl = await uploadToCloudinary(req.file.path);
+        const imageUrl = await uploadToCloudinary(req.file.buffer); 
 
-        const user = await User.findByIdAndUpdate(req.user_id, { profileImage: imageUrl}, { new: true });
+        const user = await User.findByIdAndUpdate(
+            req.user._id, 
+            { profileImage: imageUrl }, 
+            { new: true }
+        );
 
-        res.staus(200).json({ msg: "Profile image uploaded successfully", profileImage: user.profileImage });
+        if (!user) {
+            return res.status(404).json({ error: "User not found" });
+        }
 
+        res.status(200).json({ msg: "Profile image uploaded successfully", profileImage: user.profileImage });
     } catch (error) {
-        res.status(500).json({ error: "Image uploaded failed", details: error.message });
+        console.error("Error in uploadProfileImage:", error);
+        res.status(500).json({ error: "Image upload failed", details: error.message });
     }
-}
+};

@@ -8,7 +8,7 @@ const { uploadMiddleware } = require("../config/cloudinaryconfig");
 router.post("/register", authController.registerUser);
 router.post("/login", authController.loginUser);
 
-router.post("/profile", authMiddleware.authenticateUser, uploadMiddleware.single("profileImage"), authController.uploadProfileImage);
+router.post("/upload-profile", authMiddleware.authenticateUser, uploadMiddleware.single("image"), userController.uploadProfileImage);
 
 router.get("/user-profile",authMiddleware.authenticateUser, authController.getUserprofile);
 router.put("/update-profile",authMiddleware.authenticateUser, authController.updateUserProfile);
