@@ -5,12 +5,11 @@ import AdminSidebar from "../components/AdminSidebar";
 const AdminLayout = () => {
   return (
     <div className="flex min-h-screen bg-gray-100">
-      {/* Sidebar */}
+      
       <div className="w-64 bg-white border-r">
         <AdminSidebar />
       </div>
 
-      {/* Main Content */}
       <div className="flex-1 p-6">
         <Outlet />
       </div>

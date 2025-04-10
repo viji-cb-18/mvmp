@@ -5,7 +5,7 @@ import { FiLogOut, FiSettings, FiBox, FiUser, FiClipboard } from 'react-icons/fi
 const VendorLayout = () => {
   return (
     <div className="flex min-h-screen bg-gray-50">
-      {/* Sidebar */}
+   
       <aside className="w-64 bg-white shadow-md">
         <div className="p-6 border-b">
           <h2 className="text-xl font-bold text-purple-600">VENDOR</h2>
@@ -38,16 +38,14 @@ const VendorLayout = () => {
           </button>
         </nav>
       </aside>
-
-      {/* Main Content */}
+    
       <div className="flex-1 flex flex-col">
-        {/* Top Bar */}
+     
         <header className="bg-white p-4 shadow-sm flex justify-between items-center">
           <div className="text-lg font-semibold text-gray-700">Good Morning, Vendor!</div>
           <div className="text-sm text-gray-600">Today: {new Date().toLocaleDateString()}</div>
         </header>
 
-        {/* Dynamic Content */}
         <main className="p-6 bg-gray-100 flex-1 overflow-y-auto">
           <Outlet />
         </main>

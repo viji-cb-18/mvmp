@@ -16,7 +16,7 @@ const Checkout = () => {
       price: item.price
     }));
 
-    const vendorId = products[0]?.productId?.vendorId; // Simplified
+    const vendorId = products[0]?.productId?.vendorId; 
 
     await axios.post('/api/orders/create', {
       customerId: userId,

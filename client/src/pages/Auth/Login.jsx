@@ -29,7 +29,7 @@ const Login = () => {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 px-4">
-      {/* NeziCart logo */}
+    
       <div className="mb-6">
         <Link to="/" className="flex items-center space-x-1">
           <span className="text-4xl font-extrabold text-blue-700 tracking-tight">Nezi</span>
@@ -37,7 +37,6 @@ const Login = () => {
         </Link>
       </div>
 
-      {/* Login Box */}
       <div className="w-full max-w-md bg-white p-8 rounded-lg shadow-md">
         <h2 className="text-2xl font-bold text-center mb-6">Sign in to your account</h2>
 

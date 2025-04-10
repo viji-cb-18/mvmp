@@ -1,15 +1,3 @@
-/*import React from "react";
-import { ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css"
-
-const App = () => (
-  <>
-    <ToastContainer />
-  </>
-);
-
-export default App;
-*/
 import React from "react";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";

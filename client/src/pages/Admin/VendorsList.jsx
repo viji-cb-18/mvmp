@@ -1,47 +1,3 @@
-/*import React, { useEffect, useState } from 'react';
-import axios from 'axios';
-import { getApprovedVendors } from '../../services/adminServices';
-
-const VendorsList = () => {
-  const [vendors, setVendors] = useState([]);
-
-  useEffect(() => {
-    const fetchVendors = async () => {
-      try {
-        const res = await getApprovedVendors(); // from adminServices
-        console.log("Fetched Vendors:", res.data); // ✅ Check in browser console
-        setVendors(res.data);
-      } catch (err) {
-        console.error("Error fetching vendors:", err);
-      }
-    };
-  
-    fetchVendors();
-  }, []);
-
-  return (
-    <div className="p-4">
-      <h2 className="text-xl font-semibold mb-4">All Vendors</h2>
-      {vendors.length > 0 ? (
-        <ul className="space-y-2">
-          {vendors.map((vendor) => (
-            <li key={vendor._id} className="border p-2 rounded shadow">
-              <p><strong>Name:</strong> {vendor.name}</p>
-              <p><strong>Email:</strong> {vendor.email}</p>
-              <p><strong>Status:</strong> {vendor.approvalStatus}</p>
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <p>No vendors found.</p>
-      )}
-    </div>
-  );
-  
-};
-
-export default VendorsList;
-*/
 import React, { useEffect, useState } from 'react';
 import { getApprovedVendors, deleteUser } from '../../services/adminServices';
 import { toast } from 'react-toastify';
@@ -67,7 +23,7 @@ const VendorsList = () => {
     try {
       await deleteUser(id);
       toast.success("Vendor deleted successfully");
-      fetchVendors(); // Refresh list
+      fetchVendors(); 
     } catch (err) {
       toast.error("Failed to delete vendor");
     }
@@ -106,7 +62,7 @@ const VendorsList = () => {
                   <td className="py-2 px-4">{vendor.storeName || "N/A"}</td>
                   <td className="py-2 px-4 text-green-600">{vendor.approvalStatus}</td>
                   <td className="py-2 px-4 text-center space-x-2">
-                    {/* Update button (redirect or open modal) */}
+                  
                     <button
                       className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 text-xs"
                       onClick={() => toast.info("Edit feature coming soon!")}
@@ -114,7 +70,7 @@ const VendorsList = () => {
                       <FaPen className="inline-block mr-1" />
                       Edit
                     </button>
-                    {/* Delete button */}
+                 
                     <button
                       className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 text-xs"
                       onClick={() => handleDelete(vendor._id)}
