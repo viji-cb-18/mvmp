@@ -240,27 +240,7 @@ exports.changePassword = async (req, res) => {
     }
 }
 
-/*exports.deleteUser =async (req, res) => {
-    try {
-        const { userId } = req.params;
 
-        if (req.user._id.toString() === userId) {
-            return res.status(403).json({ msg: "You cannot delete your own account!" });
-        }
-
-        if (req.user.role !== "admin") {
-            return res.status(403).json({ msg: "Access denied! Admins only" });
-        }
-
-        const deleteUser = await User.findByIdAndDelete(userId);
-        if (!deleteUser) return res.status(404).json({ error: "User not found" });
-
-        res.status(200).json({ msg: "User deleted successfully" });
-    } catch (error) {
-        res.status(500).json({ msg: "Internal server error" });
-    }
-};
-*/
 
 exports.deleteUser = async (req, res) => {
     try {
@@ -277,69 +257,7 @@ exports.deleteUser = async (req, res) => {
     }
   };
   
-/*exports.getAllVendors = async (req, res) => {
-    try {
-        if (req.user.role !== "admin") {
-            return res.status(403).json({ error: "Access denied! Admins only" });
-        }
 
-        const page = parseInt(req.query.page) || 1;
-        const limit = parseInt(req.query.limit) || 10;
-        const skip = (page - 1) * limit;
-        const sortBy = req.query.sortBy || "createdAt";
-        const order = req.query.order === "asc" ? 1 : -1;
-
-        const search = req.query.search || "";
-        const filter = { role: "vendor" };
-        if (search) {
-            filter.name = { $regex: search, $options: "i" };
-        }
-
-        const vendors = await User.find(filter)
-            .sort({ [sortBy]: order })
-            .skip(skip)
-            .limit(limit);
-
-        const total = await User.countDocuments(filter);
-
-        if (!vendors || vendors.length === 0) {
-                return res.status(404).json({ msg: "No vendors found" });
-        }
-    
-        res.status(200).json({
-                page,
-                limit,
-                totalPages: Math.ceil(total / limit),
-                totalItems: total,
-                data: vendors
-        });
-    } catch (error) {
-        console.error("Error in getVendors:", error);
-        res.status(500).json({ error: "Internal Server Error", details: error.message });
-    }
-};
-
-exports.getAllVendors = async (req, res) => {
-    try {
-        const vendors = await User.find({ role: 'vendor', approvalStatus: 'pending' });
-        res.status(200).json(vendors);
-    } catch (error) {
-        res.status(500).json({ message: 'Error fetching vendors', error });
-    }
-};
-
-  
-  exports.updateVendorApproval = async (req, res) => {
-    const { id } = req.params;
-    const { approvalStatus } = req.body;
-  
-    try {
-      const updated = await User.findByIdAndUpdate(id, { approvalStatus }, { new: true });
-      res.status(200).json({ msg: `Vendor ${approvalStatus}`, vendor: updated });
-    } catch (error) {
-      res.status(500).json({ msg: 'Error updating vendor status', error: error.message });
-    }
-  };*/
 
   
   exports.getAllVendors = async (req, res) => {
