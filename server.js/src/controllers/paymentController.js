@@ -1,7 +1,7 @@
 const Payment = require("../models/Payment");
 const Order = require("../models/Order");
 const User = require("../models/User");
-const Vendor = require("../models/Vendor");
+//const Vendor = require("../models/Vendor");
 require("dotenv").config();
 
 

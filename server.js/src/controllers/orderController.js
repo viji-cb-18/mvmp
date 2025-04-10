@@ -192,3 +192,33 @@ exports.cancelOrder = async (req, res) => {
         res.status(500).json({ error: "Internal Server Error", details: error.message });
     }
 };
+
+exports.requestReturn = async (req, res) => {
+    const { orderId } = req.params;
+
+    try {
+    
+        const order = await Order.findById(orderId);
+        
+        if (!order) {
+            return res.status(404).json({ msg: "Order not found" });
+        }
+
+        if (order.customerId.toString() !== req.user._id.toString()) {
+            return res.status(403).json({ msg: "You can only request returns for your own orders" });
+        }
+
+        if (order.orderStatus !== "Delivered") {
+            return res.status(400).json({ msg: "You can only request a return for delivered orders" });
+        }
+
+     
+        order.returnRequested = true;
+        await order.save();
+
+        res.status(200).json({ msg: "Return request submitted successfully", order });
+    } catch (error) {
+        console.error("Error in requestReturn:", error);
+        res.status(500).json({ msg: "Failed to request return", error: error.message });
+    }
+};

@@ -87,8 +87,6 @@ exports.updateCartItem = async (req, res) => {
     }
 };
 
-
-
 exports.removeFromCart = async (req, res) => {
     try {
         const userId = req.user._id;  

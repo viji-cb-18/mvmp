@@ -1,26 +1,26 @@
-import { useState } from 'react';
-import Home from "./pages/Home";
-import Login from "./pages/Login";
-import Register from "./pages/Register";
-import Dashboard from "./pages/Dashboard";
-import Header from "./components/Header";
-import Footer from "./components/Footer";
+/*import React from "react";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css"
 
-import './App.css';
-
-function App() {
-  return(
-    <Router>
-      <Header />
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-      </Routes>
-      <Footer />
-    </Router>
-  )
-}
+const App = () => (
+  <>
+    <ToastContainer />
+  </>
+);
 
 export default App;
+*/
+import React from "react";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import AppRouter from "./routes/AppRouter";
+
+const App = () => (
+  <>
+    <ToastContainer position="top-right" autoClose={3000} />
+    <AppRouter />
+  </>
+);
+
+export default App;
+

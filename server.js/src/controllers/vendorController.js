@@ -1,10 +1,73 @@
-const Vendor = require("../models/Vendor");
+/*const Vendor = require("../models/Vendor");
 const User = require("../models/User");
 const multer = require("multer");
 const { uploadToCloudinary } = require("../config/cloudinaryconfig");
 const bcrypt = require("bcryptjs");
 
-
+exports.getPendingVendors = async (req, res) => {
+    try {
+      console.log("Fetching pending vendors...");
+      const pendingVendors = await Vendor.find({ isApproved: false });
+      console.log("Found vendors:", pendingVendors);
+      res.status(200).json(pendingVendors);
+    } catch (err) {
+      console.error("Error in getPendingVendors:", err);
+      res.status(500).json({ msg: "Server error" });
+    }
+  };
+  
+  
+  /*exports.getApproveVendor = async (req, res) => {
+    const { vendorId } = req.params;
+    const { registrationStatus } = req.body; // "approved" or "rejected"
+  
+    try {
+      const updatedVendor = await Vendor.findByIdAndUpdate(
+        vendorId,
+        { isApproved: registrationStatus === "approved", registrationStatus },
+        { new: true }
+      );
+  
+      if (!updatedVendor) {
+        return res.status(404).json({ msg: "Vendor not found" });
+      }
+  
+      res.status(200).json({ msg: `Vendor ${registrationStatus}`, vendor: updatedVendor });
+    } catch (error) {
+      res.status(500).json({ msg: "Error updating vendor approval", error: error.message });
+    }
+  };
+  
+ // In vendorController.js
+exports.approveVendor = async (req, res) => {
+    try {
+      const { vendorId } = req.params;
+      const { approvalStatus } = req.body;
+  
+      const vendor = await User.findById(vendorId);
+      if (!vendor) {
+        return res.status(404).json({ msg: "Vendor not found" });
+      }
+  
+      vendor.approvalStatus = approvalStatus;
+      await vendor.save();
+  
+      res.status(200).json({ msg: `Vendor ${approvalStatus}` });
+    } catch (err) {
+      res.status(500).json({ msg: "Server error", error: err.message });
+    }
+  };
+  
+  
+  exports.getApprovedVendors = async (req, res) => {
+    try {
+      const approvedVendors = await User.find({ role: 'vendor', approvalStatus: 'approved' });
+      res.status(200).json(approvedVendors);
+    } catch (err) {
+      res.status(500).json({ msg: "Server error", error: err.message });
+    }
+  };
+  
 
 exports.getAllVendors = async (req, res) => {
     try {
@@ -169,4 +232,43 @@ exports.manageStoreInfo = async (req, res) => {
     }
 };
 
+exports.getVendorPerformanceReport = async (req, res) => {
+    try {
+        const vendorsPerformance = await Vendor.aggregate([
+            {
+                $lookup: {
+                    from: "orders", 
+                    localField: "_id",
+                    foreignField: "vendorId",
+                    as: "orders"
+                }
+            },
+            {
+                $unwind: "$orders" 
+            },
+            {
+                $group: {
+                    _id: "$_id", 
+                    storeName: { $first: "$storeName" },
+                    totalSales: { $sum: "$orders.totalAmount" }, 
+                    totalOrders: { $sum: 1 }, 
+                }
+            },
+            {
+                $sort: { totalSales: -1 } 
+            }
+        ]);
 
+       
+        if (!vendorsPerformance.length) {
+            return res.status(404).json({ msg: "No vendors found or no sales data" });
+        }
+
+       
+        res.status(200).json(vendorsPerformance);
+    } catch (error) {
+        console.error("Error fetching vendor performance:", error);
+        res.status(500).json({ msg: "Failed to fetch vendor productivity report", error: error.message });
+    }
+};
+*/

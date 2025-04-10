@@ -12,10 +12,10 @@ router.delete("/:productId",authMiddleware.authenticateUser,authMiddleware.vendo
 router.post("/upload-images", authMiddleware.authenticateUser, authMiddleware.vendorOnly, uploadMiddleware.array("images", 5), productController.uploadProductImage);
 
 router.get("/:productId", productController.getProductById);
-router.get("/", productController.getAllProducts); 
+router.get("/products", productController.getAllProducts); 
 router.get("/product/category/:categoryId",productController.getProductsByCategory );
 router.get("/product/vendor/:vendorId", productController.getProductsByVendor)
 
-//router.get("/best-sellers", productController.getBestSellingProducts);
+router.get("/best-sellers", productController.getBestSellingProducts);
 
 module.exports = router;

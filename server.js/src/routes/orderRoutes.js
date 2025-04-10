@@ -10,5 +10,6 @@ router.get("/:orderId",authMiddleware.authenticateUser, orderController.getOrder
 router.put("/:orderId/status",authMiddleware.authenticateUser,authMiddleware.vendorOnly, orderController.updateOrderStatus);
 router.put("/:orderId/cancel", authMiddleware.authenticateUser, orderController.cancelOrder);
 router.delete("/:orderId",authMiddleware.authenticateUser,authMiddleware.adminOnly, orderController.deleteOrder);
+router.put("/:orderId/return", authMiddleware.authenticateUser, orderController.requestReturn);
 
 module.exports = router;

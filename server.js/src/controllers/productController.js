@@ -2,10 +2,10 @@ const { default: mongoose } = require("mongoose");
 const Product = require("../models/Product");
 const Category = require("../models/Category");
 const multer = require("multer");
-const { cloudinary } = require("../config/cloudinaryconfig");
+const { cloudinary, uploadToCloudinary } = require("../config/cloudinaryconfig");
 const Order = require("../models/Order");
 
-exports.addProduct = async (req, res) => {
+/*exports.addProduct = async (req, res) => {
     try {
         const { vendorId, name, description, price, stockQuantity, category, images } = req.body;
 
@@ -40,7 +40,38 @@ exports.addProduct = async (req, res) => {
     } catch (error) {
         res.status(500).json({ msg: "Internal server error", error: error.message });
     }
-};
+};*/
+
+exports.addProduct = async (req, res) => {
+    try {
+      const { name, description, price, stockQuantity, category } = req.body;
+  
+      if (!name || !price || !category) {
+        return res.status(400).json({ msg: "Missing required fields" });
+      }
+  
+      const imageUploads = await Promise.all(
+        req.files.map(file => uploadToCloudinary(file.buffer, "products"))
+      );
+  
+      const newProduct = new Product({
+        name,
+        description,
+        price,
+        stockQuantity,
+        category,
+        images: imageUploads, // array of URLs
+        vendorId: req.user._id,
+      });
+  
+      await newProduct.save();
+  
+      res.status(201).json({ msg: "Product added successfully", product: newProduct });
+    } catch (err) {
+      res.status(500).json({ msg: "Failed to add product", error: err.message });
+    }
+  };
+  
 
 exports.getAllProducts = async (req, res) => {
     try {
@@ -177,8 +208,6 @@ exports.getProductsByCategory = async (req, res) => {
     }
 };
 
-
-
 exports.getProductsByVendor = async (req, res) => {
     try {
         const { vendorId } = req.params;
@@ -190,7 +219,7 @@ exports.getProductsByVendor = async (req, res) => {
     }
 };
 
-/*exports.getBestSellingProducts = async (req, res) => {
+exports.getBestSellingProducts = async (req, res) => {
     try {
      
         const orders = await Order.find().populate("products.productId");
@@ -227,6 +256,6 @@ exports.getProductsByVendor = async (req, res) => {
         console.error("Error fetching best-sellers:", error);
         res.status(500).json({ error: "Failed to fetch best-selling products", details: error.message });
     }
-};*/
+};
 
 
