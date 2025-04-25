@@ -61,7 +61,7 @@ const Category = require("../models/Category");
     }
   };
  
-
+/*
   exports.getAllProducts = async (req, res) => {
     try {
       const filter = {};
@@ -96,12 +96,13 @@ const Category = require("../models/Category");
         filter.createdAt = { $gte: tenDaysAgo };
       }
       
-  
+
       const products = await Product.find(filter)
         .populate("vendor", "storeName storeLogo")
         .populate("category", "name")
         .populate("subcategory", "name")
-        .sort({ createdAt: -1 });
+        .sort({ createdAt: -1 })
+      
   
       res.status(200).json({
         success: true,
@@ -114,6 +115,69 @@ const Category = require("../models/Category");
     }
   };
   
+*/
+exports.getAllProducts = async (req, res) => {
+  try {
+    const filter = {};
+
+    if (req.query.vendorId) {
+      filter.vendorId = req.query.vendorId;
+    }
+
+    if (req.query.subcategory) {
+      filter.subcategory = req.query.subcategory;
+    } 
+    else if (req.query.category) {
+      const parent = await Category.findById(req.query.category).populate("subcategories", "_id");
+
+      if (parent) {
+        const subIds = parent.subcategories.map((s) => s._id);
+        filter.category = { $in: [req.query.category, ...subIds] };
+      } else {
+        return res.status(404).json({ error: "Parent category not found" });
+      }
+    }
+
+    if (req.query.search) {
+      const searchRegex = new RegExp(req.query.search, "i");
+      filter.name = searchRegex;
+    }
+
+    if (req.query.recent === "true") {
+      const tenDaysAgo = new Date();
+      tenDaysAgo.setDate(tenDaysAgo.getDate() - 10);
+      filter.createdAt = { $gte: tenDaysAgo };
+    }
+
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+
+    const total = await Product.countDocuments(filter);
+
+    const products = await Product.find(filter)
+      .populate("vendor", "storeName storeLogo")
+      .populate("category", "name")
+      .populate("subcategory", "name")
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
+
+    res.status(200).json({
+      success: true,
+      currentPage: page,
+      totalPages: Math.ceil(total / limit),
+      totalItems: total,
+      data: products,
+    });
+  } catch (err) {
+    console.error("Error in getAllProducts:", err);
+    res.status(500).json({ error: "Server Error", details: err.message });
+  }
+};
+
+
+
 
   exports.getAllReviews = async (req, res) => {
     try {
@@ -248,7 +312,7 @@ exports.getProductsByCategory = async (req, res) => {
 };
 
 
-exports.getProductsByVendor = async (req, res) => {
+/*exports.getProductsByVendor = async (req, res) => {
   try {
     const { vendorId } = req.params;
 
@@ -268,7 +332,47 @@ exports.getProductsByVendor = async (req, res) => {
       details: error.message,
     });
   }
+};*/
+
+exports.getProductsByVendor = async (req, res) => {
+  try {
+    const { vendorId } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(vendorId)) {
+      return res.status(400).json({ msg: "Invalid vendor ID format" });
+    }
+
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+
+    const filter = { vendor: vendorId };
+
+    const total = await Product.countDocuments(filter);
+
+    const products = await Product.find(filter)
+      .populate("category", "name")
+      .populate("subcategory", "name")
+      .sort({ createdAt: -1 }) // Optional: newest first
+      .skip(skip)
+      .limit(limit);
+
+    res.status(200).json({
+      success: true,
+      currentPage: page,
+      totalPages: Math.ceil(total / limit),
+      totalItems: total,
+      data: products,
+    });
+  } catch (error) {
+    console.error("Error fetching vendor products:", error);
+    res.status(500).json({
+      error: "Failed to fetch products",
+      details: error.message,
+    });
+  }
 };
+
 
   
   exports.getBestSellingProducts = async (req, res) => {

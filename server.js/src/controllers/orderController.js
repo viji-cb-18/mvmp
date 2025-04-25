@@ -1,6 +1,7 @@
 const Order = require("../models/Order");
 const Cart = require("../models/Cart");
 const Shipment = require("../models/Shipment");
+const Product = require("../models/Product");
 const User = require("../models/User");
 const multer = require("multer");
 const { cloudinary, uploadToCloudinary } = require("../config/cloudinaryconfig");
@@ -60,6 +61,14 @@ exports.createOrder = async (req, res) => {
 
     console.log("Order saved to DB with ID:", order._id);
     console.log("Connected DB name:", require("mongoose").connection.name);
+
+    for (const item of products) {
+      await Product.findByIdAndUpdate(
+        item.productId,
+        { $inc: { stockQuantity: -item.quantity } }, 
+        { new: true }
+      );
+    }
 
     await Cart.findOneAndDelete({ userId: customerId });
 
@@ -301,6 +310,8 @@ exports.deleteOrder = async (req, res) => {
       res.status(500).json({ msg: "Server error", error: err.message });
     }
   };
+
+  
   
   exports.approveReturnRequest = async (req, res) => {
     try {
@@ -413,7 +424,7 @@ exports.deleteOrder = async (req, res) => {
     }
   };
   
-     
+/*     
 exports.getVendorOrders = async (req, res) => {
     try {
       const vendorId = req.user._id;
@@ -425,6 +436,38 @@ exports.getVendorOrders = async (req, res) => {
   
       res.status(200).json({ success: true, orders });
     } catch (error) {
+      res.status(500).json({ success: false, message: 'Something went wrong' });
+    }
+  };
+  */
+  exports.getVendorOrders = async (req, res) => {
+    try {
+      const vendorId = req.user._id;
+  
+      const page = parseInt(req.query.page) || 1;
+      const limit = parseInt(req.query.limit) || 10;
+      const skip = (page - 1) * limit;
+  
+      const filter = { vendorId };
+  
+      const total = await Order.countDocuments(filter);
+  
+      const orders = await Order.find(filter)
+        .populate('customerId', 'name email')
+        .populate('products.productId', 'name price image')
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit);
+  
+      res.status(200).json({
+        success: true,
+        currentPage: page,
+        totalPages: Math.ceil(total / limit),
+        totalItems: total,
+        data: orders,
+      });
+    } catch (error) {
+      console.error("Vendor orders fetch failed:", error);
       res.status(500).json({ success: false, message: 'Something went wrong' });
     }
   };

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { getCartItems } from "../../services/cartServices";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { toast } from "react-toastify";
 import { Elements } from "@stripe/react-stripe-js";
 import { loadStripe } from "@stripe/stripe-js";
@@ -9,17 +9,22 @@ import { createPaymentIntent } from "../../services/paymentServices";
 import axios from "../../services/axiosInstance";
 import { createOrder } from "../../services/orderServices";
 
+
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY);
 
 const CheckoutPage = () => {
   const navigate = useNavigate();
   const [cartItems, setCartItems] = useState([]);
+  const location = useLocation();
+
   const [formData, setFormData] = useState({
     fullName: "",
     address: "",
     phone: "",
     paymentMethod: "cod",
   });
+
+  const [formErrors, setFormErrors] = useState({});
 
   const [clientSecret, setClientSecret] = useState("");
 
@@ -28,7 +33,7 @@ const CheckoutPage = () => {
     0
   );
 
-  useEffect(() => {
+  /*useEffect(() => {
     const fetchCart = async () => {
       try {
         const res = await getCartItems();
@@ -38,7 +43,34 @@ const CheckoutPage = () => {
       }
     };
     fetchCart();
-  }, []);
+  }, []);*/
+
+  useEffect(() => {
+    const fetchCartOrProduct = async () => {
+      try {
+        if (location.state?.product) {
+          // 🛒 Single Product Buy Now
+          console.log("Buy Now product detected:", location.state.product);
+          const singleProduct = location.state.product;
+          setCartItems([
+            {
+              productId: singleProduct,
+              quantity: 1,
+            },
+          ]);
+        } else {
+          // 🛒 Normal Cart Checkout
+          const res = await getCartItems();
+          setCartItems(res.data.items || []);
+        }
+      } catch (err) {
+        toast.error("Failed to load cart or product");
+      }
+    };
+  
+    fetchCartOrProduct();
+  }, [location.state]);
+  
 
   useEffect(() => {
     const initiatePayment = async () => {
@@ -59,6 +91,38 @@ const CheckoutPage = () => {
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
+  const validateForm = () => {
+    const errors = {};
+  
+    if (!formData.fullName.trim()) {
+      errors.fullName = "Full name is required.";
+    }
+  
+    if (!formData.address.trim()) {
+      errors.address = "Address is required.";
+    }
+  
+    if (!formData.phone.trim()) {
+      errors.phone = "Phone number is required.";
+    } else if (!/^\d{10,15}$/.test(formData.phone.trim())) {
+      errors.phone = "Phone number must be 10–15 digits with no spaces or symbols.";
+    }
+    
+  
+    if (cartItems.length === 0) {
+      toast.error("Your cart is empty.");
+      return { errors, valid: false };
+    }
+  
+    setFormErrors(errors);
+  
+    return {
+      errors,
+      valid: Object.keys(errors).length === 0,
+    };
+  };
+  
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (formData.paymentMethod === "cod") {
@@ -78,8 +142,7 @@ const CheckoutPage = () => {
         toast.error("Your cart is empty");
         return;
       }
-  
-      const vendorId = cartItems[0]?.productId?.vendor;
+      const vendorId = cartItems[0]?.productId?.vendor || cartItems[0]?.productId?.vendor;
   
       if (!vendorId) {
         toast.error("Missing vendorId. Cannot place order.");
@@ -139,6 +202,9 @@ const CheckoutPage = () => {
           className="w-full border px-4 py-2 rounded"
           required
         />
+        {formErrors.fullName && (
+  <p className="text-red-500 text-sm mt-1">{formErrors.fullName}</p>
+)}
 
         <textarea
           name="address"
@@ -148,6 +214,9 @@ const CheckoutPage = () => {
           className="w-full border px-4 py-2 rounded"
           required
         />
+        {formErrors.address && (
+  <p className="text-red-500 text-sm mt-1">{formErrors.address}</p>
+)}
 
         <input
           type="tel"
@@ -158,7 +227,9 @@ const CheckoutPage = () => {
           className="w-full border px-4 py-2 rounded"
           required
         />
-
+{formErrors.phone && (
+  <p className="text-red-500 text-sm mt-1">{formErrors.phone}</p>
+)}
         <div className="mt-4">
           <label className="block font-medium mb-1">Payment Method</label>
           <select

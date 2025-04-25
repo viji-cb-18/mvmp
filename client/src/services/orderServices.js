@@ -4,7 +4,16 @@ export const createOrder = (orderData) => axios.post('/orders/create', orderData
 export const getAllOrders = () => axios.get('/orders');
 
 
-export const getVendorOrders = () => axios.get("/orders/vendor/orders");
+//export const getVendorOrders = () => axios.get("/orders/vendor/orders");
+export const getVendorOrders = async (filters = {}) => {
+    const params = new URLSearchParams();
+  
+    if (filters.page) params.append('page', filters.page);
+    if (filters.limit) params.append('limit', filters.limit);
+  
+    const res = await axios.get(`/orders/vendor/orders?${params.toString()}`);
+    return res.data; 
+  };
 
 
 export const getOrderById = (orderId) => axios.get(`/orders/${orderId}`);

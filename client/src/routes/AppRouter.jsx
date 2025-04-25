@@ -23,7 +23,6 @@ import VendorLogin from '../pages/Auth/VendorLogin';
 
 import Home from '../pages/Customer/Home';
 import ContactPage from "../pages/ContactPage";
-import ShopPage from '../pages/Customer/Shop';
 import ProductDetailsPage from "../pages/Customer/ProductDetailsPage";
 import CartPage from '../pages/Customer/CartPage';
 import CheckoutPage from '../pages/Customer/CheckoutPage';
@@ -33,7 +32,6 @@ import Dashboard from '../pages/Customer/Dashboard';
 import NewArrivalsPage from '../pages/Customer/NewArrivalsPage';
 import BestSellingProducts from "../components/BestSellingProducts";
 import CategoriesPage from "../pages/CategoriesPage";
-import EnquiryPage from "../pages/EnquiryPage";
 import AboutUs from '../pages/Aboutus';
 
 
@@ -83,7 +81,7 @@ const AppRouter = () => {
           <Route index element={<Home />} />
           <Route path="/about" element={<AboutUs />} />
           <Route path="/contact" element={<ContactPage />} />
-          <Route path="shop" element={<ShopPage />} />
+          
           <Route path="product/:id" element={<ProductDetailsPage />} />
           <Route path="cart" element={<CartPage />} />
           <Route path="checkout" element={<CheckoutPage />} />
@@ -98,13 +96,6 @@ const AppRouter = () => {
           } />
 
          <Route path="orders/:orderId" element={<OrderDetails />} />
-
-
-         <Route path="enquiry" element={
-             <ProtectedRoute allowedRoles={[ROLES.CUSTOMER]}>
-             <EnquiryPage />
-             </ProtectedRoute>
-        } />
 
           <Route path="change-password" element={
             <ProtectedRoute>

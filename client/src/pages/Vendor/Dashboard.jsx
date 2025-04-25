@@ -32,12 +32,20 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const productRes = await getProductsByVendor(user._id);
-        setProducts(Array.isArray(productRes.data?.data) ? productRes.data.data : []);
+        //const productRes = await getProductsByVendor(user._id);
+        //setProducts(Array.isArray(productRes.data?.data) ? productRes.data.data : []);
+        const productRes = await getProductsByVendor(user._id, { page: 1, limit: 50 });
+        const fetchedProducts = productRes.data;
+        setProducts(Array.isArray(fetchedProducts) ? fetchedProducts : []);
 
-        const orderRes = await getVendorOrders(user._id);
-        const fetchedOrders = orderRes.data?.orders;
+
+        //const orderRes = await getVendorOrders(user._id);
+        //const fetchedOrders = orderRes.data?.orders;
+        //setOrders(Array.isArray(fetchedOrders) ? fetchedOrders : []);
+        const orderRes = await getVendorOrders({ page: 1, limit: 100 }); 
+        const fetchedOrders = orderRes.data;
         setOrders(Array.isArray(fetchedOrders) ? fetchedOrders : []);
+
       } catch (error) {
         console.error("Failed to load dashboard data", error);
       } finally {

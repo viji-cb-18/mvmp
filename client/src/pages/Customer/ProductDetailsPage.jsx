@@ -113,21 +113,7 @@ const ProductDetails = () => {
   Add to cart
 </button>
 
-            <button
-  className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded font-semibold flex items-center gap-2"
-  onClick={() =>
-    navigate("/enquiry", {
-      state: {
-        vendorId: product.vendorId?._id || product.vendorId,
-        vendorName: product.vendorId?.storeName || "Vendor",
-        productId: product._id,
-        productName: product.name,
-      },
-    })
-  }
->
-  <FaCommentDots /> Ask Vendor
-</button>
+           
 
           </div>
         </div>
