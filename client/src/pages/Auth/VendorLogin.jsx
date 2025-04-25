@@ -23,32 +23,33 @@ const VendorLogin = () => {
     try {
       const res = await vendorLogin(values);
       const { token, user } = res.data;
-
-      localStorage.setItem("token", token);
-      localStorage.setItem("user", JSON.stringify(user));
-
-      dispatch(setCredentials({ token, user }));
-
-      toast.success("Login successful");
-
-      if (user.role === "vendor") {
-        navigate("/vendor/dashboard");
-      } else {
-        navigate("/");
+  
+      if (user.role !== "vendor") {
+        toast.error("Access denied: Not a vendor");
+        return;
       }
+  
+      localStorage.setItem("vendorToken", token);
+      localStorage.setItem("vendorInfo", JSON.stringify(user));
+  
+      dispatch(setCredentials({ token, user }));
+  
+      toast.success("Login successful");
+      navigate("/vendor/dashboard");
     } catch (err) {
       toast.error(err?.response?.data?.msg || "Login failed", {
-        position: "top-center"
+        position: "top-center",
       });
     }
   };
+  
 
   return (
     <div className="min-h-screen bg-cover bg-center flex flex-col items-center justify-center">
       <div className="mb-6">
-        <Link to="/" className="flex items-center space-x-1">
-          <span className="text-4xl font-extrabold text-blue-700 tracking-tight">Nezi</span>
-          <span className="text-4xl font-extrabold text-yellow-500 tracking-tight">Cart</span>
+      <Link to="/" className="flex items-center space-x-1">
+          <span className="text-4xl font-extrabold text-[#3ED6B5] tracking-tight">Nezi</span>
+          <span className="text-4xl font-extrabold text-gray-800 tracking-tight">Cart</span>
         </Link>
       </div>
 
@@ -101,7 +102,8 @@ const VendorLogin = () => {
 
           <button
             type="submit"
-            className="w-full py-2 px-4 text-white bg-blue-600 hover:bg-blue-700 rounded-md text-sm font-medium transition"
+            className="w-full bg-[#3ED6B5] text-white py-2 rounded-md hover:bg-[#31b9a1] transition"
+
           >
             Login as Vendor
           </button>

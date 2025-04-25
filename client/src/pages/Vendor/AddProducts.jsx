@@ -18,6 +18,7 @@ const AddProduct = () => {
 
   const [categories, setCategories] = useState([]);
   const [subcategories, setSubcategories] = useState([]);
+  const [imagePreviews, setImagePreviews] = useState([]); 
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -44,22 +45,33 @@ const AddProduct = () => {
 
   const handleImageChange = (e) => {
     const files = Array.from(e.target.files);
+  
     if (files.length > 5) {
       toast.warning("You can only upload up to 5 images.");
       return;
     }
+  
     setForm((prev) => ({ ...prev, images: files }));
+  
+    const previewUrls = files.map((file) => URL.createObjectURL(file));
+    setImagePreviews(previewUrls);
   };
+  
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (!form.category || !form.subcategory) {
+      return toast.warning("Please select both category and subcategory.");
+    }
 
     const payload = new FormData();
     payload.append("name", form.name);
     payload.append("description", form.description);
     payload.append("price", form.price);
     payload.append("stockQuantity", form.stockQuantity);
-    payload.append("category", form.subcategory || form.category);
+    payload.append("category", form.category);
+    payload.append("subcategory", form.subcategory);
     form.images.forEach((img) => payload.append("images", img));
 
     try {
@@ -174,6 +186,19 @@ const AddProduct = () => {
             onChange={handleImageChange}
             className="block w-full text-sm text-gray-700 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100"
           />
+          {imagePreviews.length > 0 && (
+  <div className="flex gap-4 mt-4 flex-wrap">
+    {imagePreviews.map((src, index) => (
+      <img
+        key={index}
+        src={src}
+        alt={`Preview ${index}`}
+        className="w-24 h-24 object-cover rounded border"
+      />
+    ))}
+  </div>
+)}
+
         </div>
 
         <button

@@ -1,13 +1,13 @@
 import React from "react";
 import { Outlet } from "react-router-dom";
-import Navbar from "../components/Navbar";
+import Header from "../components/Header";
 import Footer from "../components/Footer";
 
 const UserLayout = () => {
   return (
     <>
-      <Navbar />
-      <main style={{ minHeight: "80vh", padding: "20px" }}>
+      <Header />
+      <main className="min-h-screen px-4 pt-4">
         <Outlet />
       </main>
       <Footer />

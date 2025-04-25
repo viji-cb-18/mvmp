@@ -53,22 +53,23 @@ const ApproveVendor = () => {
   const paginatedVendors = filteredVendors.slice(start, start + VENDORS_PER_PAGE);
 
   return (
-    <div className="p-6 bg-gray-100 min-h-screen">
+    <div className="p-6 max-w-7xl mx-auto bg-white shadow-xl rounded-2xl">
+     
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-800">Pending Vendor Approvals</h1>
-          <p className="text-sm text-gray-500">Review vendor accounts awaiting approval.</p>
+          <h1 className="text-3xl font-bold text-[#2D70E4]">Vendor Approval Panel</h1>
+          <p className="text-sm text-gray-500">Review and approve vendor accounts.</p>
         </div>
-        <div className="flex gap-2 flex-wrap">
+        <div className="flex flex-wrap gap-3">
           <input
             type="text"
-            placeholder="Search name/email"
-            className="border px-3 py-1 rounded text-sm w-60"
+            placeholder="Search by name or email"
+            className="border border-gray-300 px-3 py-2 rounded-md text-sm focus:ring-2 focus:ring-[#7AC3F1] outline-none"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
           <select
-            className="border px-3 py-1 rounded text-sm"
+            className="border border-gray-300 px-3 py-2 rounded-md text-sm focus:ring-2 focus:ring-[#7AC3F1] outline-none"
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
           >
@@ -79,47 +80,58 @@ const ApproveVendor = () => {
           </select>
           <button
             onClick={() => setSortAsc(!sortAsc)}
-            className="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700"
+            className="bg-gradient-to-r from-[#2D70E4] to-[#7AC3F1] text-white px-4 py-2 rounded-md text-sm hover:opacity-90"
           >
-            Sort by Name {sortAsc ? '↑' : '↓'}
+            Sort {sortAsc ? 'A → Z' : 'Z → A'}
           </button>
         </div>
       </div>
 
+     
       {paginatedVendors.length === 0 ? (
-        <p className="text-gray-600">No vendors found.</p>
+        <div className="text-gray-500 py-10 text-center">No vendors found.</div>
       ) : (
-        <div className="overflow-x-auto bg-white rounded shadow">
-          <table className="min-w-full text-sm text-gray-700">
-            <thead className="bg-gray-100 text-left">
+        <div className="overflow-x-auto rounded-lg border border-gray-200 shadow-sm">
+          <table className="min-w-full text-sm bg-white">
+            <thead className="bg-[#2D70E4]/10 text-[#2D70E4] font-semibold uppercase tracking-wide">
               <tr>
-                <th className="py-2 px-4">Name</th>
-                <th className="py-2 px-4">Email</th>
-                <th className="py-2 px-4">Store</th>
-                <th className="py-2 px-4">Status</th>
-                <th className="py-2 px-4 text-center">Actions</th>
+                <th className="px-4 py-3 text-left">Name</th>
+                <th className="px-4 py-3 text-left">Email</th>
+                <th className="px-4 py-3 text-left">Store</th>
+                <th className="px-4 py-3 text-left">Status</th>
+                <th className="px-4 py-3 text-center">Actions</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="divide-y divide-gray-100 text-gray-700">
               {paginatedVendors.map((vendor) => (
-                <tr key={vendor._id} className="border-t hover:bg-gray-50">
-                  <td className="py-2 px-4">{vendor.name}</td>
-                  <td className="py-2 px-4">{vendor.email}</td>
-                  <td className="py-2 px-4">{vendor.storeName || 'N/A'}</td>
-                  <td className="py-2 px-4 capitalize text-yellow-600">{vendor.approvalStatus}</td>
-                  <td className="py-2 px-4 flex justify-center gap-2">
-                    <button
-                      className="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-xs"
-                      onClick={() => handleApproval(vendor._id, 'approved')}
-                    >
-                      Approve
-                    </button>
-                    <button
-                      className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-xs"
-                      onClick={() => handleApproval(vendor._id, 'rejected')}
-                    >
-                      Reject
-                    </button>
+                <tr key={vendor._id} className="hover:bg-[#F0FDF4] transition">
+                  <td className="px-4 py-3 font-medium">{vendor.name}</td>
+                  <td className="px-4 py-3">{vendor.email}</td>
+                  <td className="px-4 py-3">{vendor.storeName || 'N/A'}</td>
+                  <td className="px-4 py-3 capitalize">
+                    <span className={`px-2 py-1 text-xs font-medium rounded-full
+                      ${vendor.approvalStatus === 'pending' ? 'bg-yellow-100 text-yellow-700' :
+                        vendor.approvalStatus === 'approved' ? 'bg-green-100 text-green-700' :
+                        'bg-red-100 text-red-600'}
+                    `}>
+                      {vendor.approvalStatus}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3 text-center">
+                    <div className="flex justify-center gap-2">
+                      <button
+                        className="px-3 py-1 bg-green-500 text-white rounded text-xs hover:bg-green-600 transition"
+                        onClick={() => handleApproval(vendor._id, 'approved')}
+                      >
+                        Approve
+                      </button>
+                      <button
+                        className="px-3 py-1 bg-red-500 text-white rounded text-xs hover:bg-red-600 transition"
+                        onClick={() => handleApproval(vendor._id, 'rejected')}
+                      >
+                        Reject
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -128,23 +140,23 @@ const ApproveVendor = () => {
         </div>
       )}
 
-      {/* Pagination */}
+     
       {totalPages > 1 && (
-        <div className="flex justify-center items-center mt-6 gap-2">
+        <div className="flex justify-center items-center gap-4 mt-6">
           <button
             onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
             disabled={currentPage === 1}
-            className="text-gray-600 hover:text-gray-800 disabled:opacity-30"
+            className="text-gray-500 hover:text-[#2D70E4] disabled:opacity-40"
           >
             <FaChevronLeft />
           </button>
-          <span className="text-sm">
+          <span className="text-sm text-gray-600">
             Page {currentPage} of {totalPages}
           </span>
           <button
             onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
             disabled={currentPage === totalPages}
-            className="text-gray-600 hover:text-gray-800 disabled:opacity-30"
+            className="text-gray-500 hover:text-[#2D70E4] disabled:opacity-40"
           >
             <FaChevronRight />
           </button>

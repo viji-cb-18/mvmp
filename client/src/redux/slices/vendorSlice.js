@@ -1,8 +1,6 @@
-// src/redux/slices/vendorSlice.js
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
 
-// Async thunk to fetch pending vendors
 export const fetchPendingVendors = createAsyncThunk(
   'vendors/fetchPending',
   async (_, { rejectWithValue }) => {

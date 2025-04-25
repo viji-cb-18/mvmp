@@ -34,50 +34,54 @@ const VendorsList = () => {
   }, []);
 
   return (
-    <div className="p-6 bg-gray-100 min-h-screen">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold text-gray-800">Approved Vendors</h2>
-        <p className="text-sm text-gray-500">Manage your vendor accounts</p>
+    <div className="p-6 max-w-7xl mx-auto bg-white shadow-xl rounded-xl">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-2">
+        <div>
+          <h2 className="text-3xl font-bold text-[#2D70E4]">Approved Vendors</h2>
+          <p className="text-sm text-gray-500">Manage and monitor your approved vendor accounts</p>
+        </div>
       </div>
 
       {vendors.length === 0 ? (
-        <p className="text-gray-600">No vendors found.</p>
+        <div className="text-center text-gray-500 mt-10">No vendors found.</div>
       ) : (
-        <div className="overflow-x-auto bg-white shadow-md rounded-lg">
-          <table className="min-w-full text-sm text-gray-700">
-            <thead className="bg-gray-100 text-left">
+        <div className="overflow-x-auto rounded-lg border border-gray-200 shadow">
+          <table className="min-w-full divide-y divide-gray-100 text-sm bg-white">
+            <thead className="bg-[#2D70E4]/10 text-[#2D70E4] font-semibold uppercase tracking-wide">
               <tr>
-                <th className="py-2 px-4">Name</th>
-                <th className="py-2 px-4">Email</th>
-                <th className="py-2 px-4">Store</th>
-                <th className="py-2 px-4">Status</th>
-                <th className="py-2 px-4 text-center">Actions</th>
+                <th className="px-4 py-3 text-left">Name</th>
+                <th className="px-4 py-3 text-left">Email</th>
+                <th className="px-4 py-3 text-left">Store</th>
+                <th className="px-4 py-3 text-left">Status</th>
+                <th className="px-4 py-3 text-center">Actions</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="divide-y divide-gray-100 text-gray-700">
               {vendors.map((vendor) => (
-                <tr key={vendor._id} className="border-t hover:bg-gray-50">
-                  <td className="py-2 px-4">{vendor.name}</td>
-                  <td className="py-2 px-4">{vendor.email}</td>
-                  <td className="py-2 px-4">{vendor.storeName || "N/A"}</td>
-                  <td className="py-2 px-4 text-green-600">{vendor.approvalStatus}</td>
-                  <td className="py-2 px-4 text-center space-x-2">
-                  
-                    <button
-                      className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 text-xs"
-                      onClick={() => toast.info("Edit feature coming soon!")}
-                    >
-                      <FaPen className="inline-block mr-1" />
-                      Edit
-                    </button>
-                 
-                    <button
-                      className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 text-xs"
-                      onClick={() => handleDelete(vendor._id)}
-                    >
-                      <FaTrash className="inline-block mr-1" />
-                      Delete
-                    </button>
+                <tr key={vendor._id} className="hover:bg-[#F0FDF4] transition">
+                  <td className="px-4 py-3 font-medium">{vendor.name}</td>
+                  <td className="px-4 py-3">{vendor.email}</td>
+                  <td className="px-4 py-3">{vendor.storeName || "N/A"}</td>
+                  <td className="px-4 py-3">
+                    <span className="inline-block px-3 py-1 text-xs rounded-full bg-green-100 text-green-700 font-medium">
+                      {vendor.approvalStatus}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3 text-center">
+                    <div className="flex justify-center gap-2">
+                      <button
+                        onClick={() => toast.info("Edit feature coming soon!")}
+                        className="flex items-center gap-1 px-3 py-1 bg-[#3ED6B5] text-white rounded hover:bg-[#31b9a1] text-xs font-medium shadow-sm transition"
+                      >
+                        <FaPen size={12} /> Edit
+                      </button>
+                      <button
+                        onClick={() => handleDelete(vendor._id)}
+                        className="flex items-center gap-1 px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600 text-xs font-medium shadow-sm transition"
+                      >
+                        <FaTrash size={12} /> Delete
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}

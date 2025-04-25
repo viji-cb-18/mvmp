@@ -1,35 +1,47 @@
 const Review =require("../models/Review");
 const multer = require("multer");
 const { cloudinary } = require("../config/cloudinaryconfig");
-
+const Product = require("../models/Product");
 
 exports.addReview = async (req, res) => {
     try {
-        const { productId, rating, comment } = req.body;
-
-        if (!productId || !rating) {
-            return res.status(400).json({ error: "Product ID and rating are required" });
-        }
-
-        const reviewData = { 
-            userId: req.user._id,
-            productId, 
-            rating, 
-            comment 
-        };
-
-        if (req.file) {
-            const uploadedImage = await uploadToCloudinary(req.file.path);
-            reviewData.image = uploadedImage;
-        }
-        
-        const review = new Review(reviewData);
-        await review.save();
-        res.status(201).json({ message: "Review added successfully", review});
+      const { productId, rating, comment } = req.body;
+  
+      if (!productId || !rating) {
+        return res.status(400).json({ error: "Product ID and rating are required" });
+      }
+  
+      const reviewData = {
+        userId: req.user._id,
+        productId,
+        rating,
+        comment,
+      };
+  
+      if (req.file) {
+        const uploadedImage = await uploadToCloudinary(req.file.path);
+        reviewData.image = uploadedImage;
+      }
+  
+      const review = new Review(reviewData);
+      await review.save();
+  
+      const reviews = await Review.find({ productId });
+      const totalReviews = reviews.length;
+      const totalRating = reviews.reduce((acc, r) => acc + r.rating, 0);
+      const averageRating = totalRating / totalReviews;
+  
+      await Product.findByIdAndUpdate(productId, {
+        averageRating,
+        totalReviews,
+      });
+  
+      res.status(201).json({ message: "Review added successfully", review });
     } catch (error) {
-        res.status(500).json({ error: "Failed to add review "});
-    }
-};
+        console.error("Failed to add review:", error.message || error);
+        res.status(500).json({ error: "Failed to add review", details: error.message });
+      }
+  };
 
 exports.getAllReviews = async (req, res) => {
     try {
@@ -64,6 +76,7 @@ exports.getAllReviews = async (req, res) => {
     }
 };
 
+
 exports.getReviewById = async (req, res) => {
     try {
         const review = await Review.findById(req.params.reviewId)
@@ -79,6 +92,23 @@ exports.getReviewById = async (req, res) => {
         res.status(500).json({ error: "Internal Server Error", details: error.message });
     }
 };
+
+
+exports.getReviewsByProductId = async (req, res) => {
+    try {
+      const { productId } = req.params;
+  
+      const reviews = await Review.find({ productId })
+        .populate("userId", "name email")
+        .sort({ createdAt: -1 });
+  
+      res.status(200).json({ data: reviews });
+    } catch (error) {
+      console.error("Error fetching reviews by productId:", error.message);
+      res.status(500).json({ error: "Failed to fetch product reviews", details: error.message });
+    }
+  };
+  
 
 exports.updateReview = async (req, res) => {
     try {
@@ -111,6 +141,7 @@ exports.updateReview = async (req, res) => {
     }
 };
 
+
 exports.deleteReview = async (req, res) => {
     try {
         const { reviewId } = req.params;
@@ -131,6 +162,7 @@ exports.deleteReview = async (req, res) => {
         res.status(500).json({ error: "Failed to delete review", details: error.message });
     }
 };
+
 
 exports.uploadReviewImage = async (req, res) => {
     try {

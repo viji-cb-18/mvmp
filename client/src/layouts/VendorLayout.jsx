@@ -1,57 +1,103 @@
-import React from "react";
-import { NavLink, Outlet } from 'react-router-dom';
-import { FiLogOut, FiSettings, FiBox, FiUser, FiClipboard } from 'react-icons/fi';
+import React, { useState, useRef, useEffect } from "react";
+import { NavLink, Outlet, useNavigate } from "react-router-dom";
+import { FiLogOut, FiBox, FiUser, FiClipboard, FiChevronDown, FiMenu } from "react-icons/fi";
+import { FaTruck, FaExchangeAlt } from "react-icons/fa"; 
+import { Link } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { logout } from "../redux/slices/authSlice";
 
 const VendorLayout = () => {
-  return (
-    <div className="flex min-h-screen bg-gray-50">
-   
-      <aside className="w-64 bg-white shadow-md">
-        <div className="p-6 border-b">
-          <h2 className="text-xl font-bold text-purple-600">VENDOR</h2>
-        </div>
-        <nav className="flex flex-col p-4 space-y-2 text-gray-700">
-          <NavLink to="/vendor/dashboard" className="flex items-center space-x-2 hover:text-purple-600">
-            <FiClipboard />
-            <span>Dashboard</span>
-          </NavLink>
-          <NavLink to="/vendor/products" className="flex items-center space-x-2 hover:text-purple-600">
-            <FiBox />
-            <span>My Products</span>
-          </NavLink>
-          
-          <NavLink to="/vendor/orders" className="flex items-center space-x-2 hover:text-purple-600">
-            <FiClipboard />
-            <span>Orders</span>
-          </NavLink>
-          <NavLink to="/vendor/settings" className="flex items-center space-x-2 hover:text-purple-600">
-            <FiSettings />
-            <span>Settings</span>
-          </NavLink>
-          <NavLink to="/vendor/profile" className="flex items-center space-x-2 hover:text-purple-600">
-            <FiUser />
-            <span>Profile</span>
-          </NavLink>
-          <button className="flex items-center space-x-2 text-red-500 mt-4 hover:text-red-700">
-            <FiLogOut />
-            <span>Logout</span>
-          </button>
-        </nav>
-      </aside>
-    
-      <div className="flex-1 flex flex-col">
-     
-        <header className="bg-white p-4 shadow-sm flex justify-between items-center">
-          <div className="text-lg font-semibold text-gray-700">Good Morning, Vendor!</div>
-          <div className="text-sm text-gray-600">Today: {new Date().toLocaleDateString()}</div>
-        </header>
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const { user } = useSelector((state) => state.auth);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const dropdownRef = useRef();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
-        <main className="p-6 bg-gray-100 flex-1 overflow-y-auto">
-          <Outlet />
-        </main>
-      </div>
+  const handleLogout = () => {
+    dispatch(logout());
+    localStorage.removeItem("token");
+    navigate("/vendor/login");
+  };
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  return (
+    <div className="flex min-h-screen">
+      {/* Sidebar */}
+      <aside className="w-64 bg-[#2B2F3A] text-white flex flex-col shadow-lg h-screen">
+    <div className="bg-[#00B894] px-4 py-3 text-center">
+    <Link to="/" className="text-3xl font-bold">
+    <span className="text-white">Nezi</span>
+    <span className="text-gray-800  px-1 rounded">Cart</span>
+  </Link>
     </div>
+
+    <nav className="flex-1 p-5 space-y-3">
+      <SidebarLink to="/vendor/dashboard" label="Dashboard" icon={<FiClipboard />} />
+      <SidebarLink to="/vendor/products" label="My Products" icon={<FiBox />} />
+      <SidebarLink to="/vendor/orders" label="Orders" icon={<FiClipboard />} />
+      <SidebarLink to="/vendor/shipments" label="Shipments" icon={<FaTruck />} />
+      <SidebarLink to="/vendor/profile" label="Profile" icon={<FiUser />} />
+      <SidebarLink to= "/vendor/returns" label="Return Request" icon={<FaExchangeAlt /> } />
+    </nav>
+  </aside>
+
+  
+  <div className="flex-1 flex flex-col bg-gray-100">
+   
+    <header className="bg-[#00B894] text-white px-4 py-3 shadow flex justify-between items-center">
+      <div className="text-lg font-semibold"></div>
+
+      <div className="flex items-center gap-4">
+        <p className="text-sm flex items-center gap-2">
+          <span className="text-white"></span>
+          {user?.name || "Vendor"}
+        </p>
+        <button
+          onClick={() => {
+            dispatch(logout());
+            localStorage.removeItem("token");
+            navigate("/vendor/login");
+          }}
+          className="bg-white text-[#00B894] font-semibold px-4 py-1.5 rounded hover:bg-gray-100 text-sm"
+        >
+          Logout
+        </button>
+      </div>
+    </header>
+
+    <main className="p-4 sm:p-6 flex-1 overflow-y-auto">
+      <Outlet />
+    </main>
+  </div>
+</div>
+    
   );
 };
+
+const SidebarLink = ({ to, label, icon }) => (
+  <NavLink
+    to={to}
+    className={({ isActive }) =>
+      `flex items-center gap-3 px-4 py-2 rounded-md text-sm font-medium transition ${
+        isActive
+          ? "bg-[#00B894] text-white shadow"
+          : "text-gray-300 hover:bg-[#00B894]/20 hover:text-white"
+      }`
+    }
+  >
+    <span className="text-lg">{icon}</span>
+    {label}
+  </NavLink>
+);
 
 export default VendorLayout;

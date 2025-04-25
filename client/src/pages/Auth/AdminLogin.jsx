@@ -3,6 +3,7 @@ import { adminLogin } from '../../services/authServices';
 import { toast } from 'react-toastify';
 import { FaUserShield } from 'react-icons/fa';
 import React, { useState } from 'react';
+import { Link } from "react-router-dom";
 
 
 const AdminLogin = () => {
@@ -36,10 +37,16 @@ const AdminLogin = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
+
       <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
-        <div className="flex justify-center mb-4">
-          <FaUserShield className="text-4xl text-red-600" />
+
+      <div className="mb-6 text-center">
+          <Link to="/" className="flex justify-center items-center space-x-1">
+            <span className="text-4xl font-extrabold text-[#3ED6B5] tracking-tight">Nezi</span>
+            <span className="text-4xl font-extrabold text-gray-800 tracking-tight">Cart</span>
+          </Link>
         </div>
+        
         <h2 className="text-2xl font-bold text-center text-gray-900 mb-6">
           Admin Login
         </h2>
@@ -71,9 +78,10 @@ const AdminLogin = () => {
     />
   </div>
   <button
-    type="submit"
-    className="w-full bg-blue-600 text-white font-medium py-2 rounded-md hover:bg-blue-700 transition"
-  >
+            type="submit"
+            className="w-full bg-[#3ED6B5] text-white py-2 rounded-md hover:bg-[#31b9a1] transition"
+
+          >
     Log in as Admin
   </button>
 </form>

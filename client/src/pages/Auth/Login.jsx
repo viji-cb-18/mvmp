@@ -1,40 +1,50 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import { useDispatch } from "react-redux";
 import { login } from "../../services/authServices";
 import { toast } from "react-toastify";
+import { setCredentials } from "../../redux/slices/authSlice"; 
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
-  const handleLogin = async (e) => {
-    e.preventDefault();
-    try {
-      const res = await login({ email, password });
-      const { token, user } = res.data;
 
-      localStorage.setItem("token", token);
-      localStorage.setItem("user", JSON.stringify(user));
+const handleLogin = async (e) => {
+  e.preventDefault();
+  try {
+    const res = await login({ email, password });
+    const { token, user } = res.data;
 
-      toast.success("Login successful");
-
-      if (user.role === "admin") navigate("/admin/dashboard");
-      else if (user.role === "vendor") navigate("/vendor/dashboard");
-      else navigate("/");
-    } catch (err) {
-      toast.error(err?.response?.data?.msg || "Login failed");
+    if (user.role !== "customer") {
+      toast.error("You are not authorized to log in from here");
+      return;
     }
-  };
+
+    localStorage.setItem("customerToken", token);
+    localStorage.setItem("customerInfo", JSON.stringify(user));
+
+    dispatch(setCredentials({ token, user }));
+    toast.success("Login successful");
+
+    navigate("/");
+  } catch (err) {
+    toast.error(err?.response?.data?.msg || "Login failed");
+  }
+};
+
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 px-4">
-    
       <div className="mb-6">
         <Link to="/" className="flex items-center space-x-1">
-          <span className="text-4xl font-extrabold text-blue-700 tracking-tight">Nezi</span>
-          <span className="text-4xl font-extrabold text-yellow-500 tracking-tight">Cart</span>
+          <span className="text-4xl font-extrabold text-[#3ED6B5] tracking-tight">Nezi</span>
+          <span className="text-4xl font-extrabold text-gray-800 tracking-tight">Cart</span>
         </Link>
+        
+
       </div>
 
       <div className="w-full max-w-md bg-white p-8 rounded-lg shadow-md">
@@ -77,7 +87,8 @@ const Login = () => {
 
           <button
             type="submit"
-            className="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition"
+            className="w-full bg-[#3ED6B5] text-white py-2 rounded-md hover:bg-[#31b9a1] transition"
+
           >
             Log in to your account
           </button>

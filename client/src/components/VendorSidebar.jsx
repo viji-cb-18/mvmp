@@ -9,7 +9,9 @@ const VendorSidebar = () => {
         <li><Link to="/vendor/dashboard">Dashboard</Link></li>
         <li><Link to="/vendor/products">Products</Link></li>
         <li><Link to="/vendor/orders">Orders</Link></li>
+        <li><Link to="/vendor/shipments">Shipments</Link></li>
         <li><Link to="/vendor/settings">Store Settings</Link></li>
+        
       </ul>
     </aside>
   );

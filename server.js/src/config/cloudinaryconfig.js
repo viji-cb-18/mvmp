@@ -11,22 +11,25 @@ const storage = multer.memoryStorage();
 
 const uploadMiddleware = multer({
   storage,
-  limits: { fileSize: 5 * 1024 * 1024 }, 
+  limits: { fileSize: 10 * 1024 * 1024 },
   fileFilter: (req, file, cb) => {
     const allowedFormats = ["image/jpeg", "image/png", "image/jpg"];
     if (!allowedFormats.includes(file.mimetype)) {
-      return cb(new Error("Only JPG, PNG, and JPEG files are allowed!"), false);
+      return cb(new Error(" Only JPG, PNG, and JPEG files are allowed!"), false);
     }
     cb(null, true);
   },
 });
 
-const uploadToCloudinary = (buffer, folder) => {
-  if (!folder) throw new Error("Folder name is required");
+const uploadToCloudinary = (buffer, folder = "uploads") => {
+  if (!buffer) throw new Error("No file buffer provided");
+  if (!folder) throw new Error("Cloudinary folder name is required");
 
   return new Promise((resolve, reject) => {
     const stream = cloudinary.uploader.upload_stream(
-      { folder, resource_type: "image" },
+      { folder, resource_type: "image", 
+        quality: "auto:best",
+        fetch_format: "auto" },
       (error, result) => {
         if (error) {
           console.error("Cloudinary Upload Error:", error);
@@ -39,21 +42,9 @@ const uploadToCloudinary = (buffer, folder) => {
   });
 };
 
-/*const uploadToCloudinary = (buffer, folder = "categories") => {
-  return new Promise((resolve, reject) => {
-    const stream = cloudinary.uploader.upload_stream(
-      { folder, resource_type: "image" },
-      (error, result) => {
-        if (error) {
-          console.error("Cloudinary Upload Error:", error);
-          return reject("Cloudinary upload failed");
-        }
-        resolve(result.secure_url);
-      }
-    );
-    stream.end(buffer);
-  });
+module.exports = {
+  cloudinary,
+  uploadMiddleware,
+  uploadToCloudinary,
 };
-*/
 
-module.exports = { cloudinary, uploadMiddleware, uploadToCloudinary };

@@ -101,39 +101,39 @@ const CategoryPage = () => {
   );
 
   return (
-    <div className="p-4 bg-gray-100 min-h-screen">
-      <div className="mb-6 flex justify-between items-center flex-wrap gap-4">
-        <h2 className="text-2xl font-bold">Category Management</h2>
-        <input
-          type="text"
-          placeholder="Search categories..."
-          className="border px-3 py-1 rounded w-64"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />
-        <button
-          onClick={() => setModalVisible(true)}
-          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-        >
-          Add New Category
-        </button>
+    <div className="p-6 max-w-7xl mx-auto bg-white shadow-xl rounded-2xl">
+      <div className="mb-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <h2 className="text-3xl font-bold text-[#2D70E4]"> Category Management</h2>
+        <div className="flex flex-wrap gap-3 items-center">
+          <input
+            type="text"
+            placeholder="Search categories..."
+            className="border border-gray-300 px-4 py-2 rounded-md text-sm focus:ring-2 focus:ring-[#3ED6B5] outline-none w-64"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+          <button
+            onClick={() => setModalVisible(true)}
+            className="bg-gradient-to-r from-[#2D70E4] to-[#7AC3F1] text-white px-4 py-2 rounded-md text-sm font-medium hover:opacity-90"
+          >
+            Add Category
+          </button>
+        </div>
       </div>
 
       {modalVisible && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded shadow-lg w-full max-w-lg relative">
-            <h3 className="text-xl font-semibold mb-4">
-              {editMode ? 'Edit Category' : 'Add Category'}
+        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+          <div className="bg-white w-full max-w-xl rounded-lg shadow-lg p-6 relative">
+            <h3 className="text-xl font-semibold mb-4 text-[#2D70E4]">
+              {editMode ? 'Edit Category' : 'Add New Category'}
             </h3>
-            <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
+            <form onSubmit={handleSubmit} className="space-y-4">
               <div className="flex gap-4">
-                <label className="flex items-center gap-2">
-                  <input type="radio" checked={!isSub} onChange={() => setIsSub(false)} />
-                  Parent
+                <label className="flex items-center gap-2 text-sm">
+                  <input type="radio" checked={!isSub} onChange={() => setIsSub(false)} /> Parent
                 </label>
-                <label className="flex items-center gap-2">
-                  <input type="radio" checked={isSub} onChange={() => setIsSub(true)} />
-                  Subcategory
+                <label className="flex items-center gap-2 text-sm">
+                  <input type="radio" checked={isSub} onChange={() => setIsSub(true)} /> Subcategory
                 </label>
               </div>
 
@@ -142,13 +142,13 @@ const CategoryPage = () => {
                 placeholder="Category Name"
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                className="border px-3 py-2 rounded"
+                className="w-full border border-gray-300 px-4 py-2 rounded focus:ring-2 focus:ring-[#3ED6B5] outline-none"
                 required
               />
 
               {isSub && (
                 <select
-                  className="border px-3 py-2 rounded"
+                  className="w-full border border-gray-300 px-4 py-2 rounded focus:ring-2 focus:ring-[#3ED6B5] outline-none"
                   value={formData.parentCategory}
                   onChange={(e) => setFormData({ ...formData, parentCategory: e.target.value })}
                   required
@@ -164,11 +164,14 @@ const CategoryPage = () => {
                 type="file"
                 accept="image/*"
                 onChange={(e) => setFormData({ ...formData, image: e.target.files[0] })}
-                className="border p-1 rounded"
+                className="w-full border border-gray-300 px-4 py-2 rounded"
               />
 
-              <div className="flex gap-2">
-                <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+              <div className="flex justify-end gap-3 pt-2">
+                <button
+                  type="submit"
+                  className="bg-[#3ED6B5] text-white px-4 py-2 rounded hover:bg-[#31b9a1] transition"
+                >
                   {editMode ? 'Update' : 'Add'}
                 </button>
                 <button
@@ -178,7 +181,7 @@ const CategoryPage = () => {
                     setEditMode(false);
                     setFormData({ name: '', parentCategory: '', image: null });
                   }}
-                  className="bg-gray-400 text-white px-4 py-2 rounded hover:bg-gray-500"
+                  className="bg-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-400 transition"
                 >
                   Cancel
                 </button>
@@ -190,20 +193,20 @@ const CategoryPage = () => {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredCategories.map((cat) => (
-          <div key={cat._id} className="bg-white p-4 rounded shadow-sm">
+          <div key={cat._id} className="bg-white p-4 rounded-lg shadow hover:shadow-md transition">
             {cat.categoryImage ? (
               <img
                 src={cat.categoryImage}
                 alt={cat.name}
-                className="w-full h-36 object-cover rounded mb-2"
+                className="w-full h-36 object-cover rounded-lg mb-3"
               />
             ) : (
-              <div className="w-full h-36 bg-gray-200 flex items-center justify-center text-gray-500 rounded mb-2">
+              <div className="w-full h-36 bg-gray-100 flex items-center justify-center text-gray-400 rounded-lg mb-3">
                 No Image
               </div>
             )}
 
-            <div className="flex justify-between items-center mb-1">
+            <div className="flex justify-between items-center mb-2">
               <h4 className="text-lg font-semibold text-gray-800">{cat.name}</h4>
               <span className={`text-xs px-2 py-1 rounded-full ${categoryTypeColors[cat.type || 'Main'] || 'bg-gray-100 text-gray-800'}`}>
                 {cat.type || 'Main'}
@@ -211,7 +214,7 @@ const CategoryPage = () => {
             </div>
 
             <p className="text-sm text-gray-600 mb-2">
-              {cat.subcategories?.length || 0} subcategories
+              {cat.subcategories?.length || 0} Subcategories
             </p>
 
             {cat.subcategories?.length > 0 && (
@@ -221,7 +224,9 @@ const CategoryPage = () => {
                     {sub.categoryImage ? (
                       <img src={sub.categoryImage} alt={sub.name} className="w-8 h-8 object-cover rounded" />
                     ) : (
-                      <div className="w-8 h-8 bg-gray-300 rounded flex items-center justify-center text-xs">No</div>
+                      <div className="w-8 h-8 bg-gray-300 text-xs flex items-center justify-center rounded">
+                        No
+                      </div>
                     )}
                     {sub.name}
                   </li>
@@ -232,13 +237,13 @@ const CategoryPage = () => {
             <div className="flex gap-2 mt-4">
               <button
                 onClick={() => handleEditCategory(cat)}
-                className="px-3 py-1 bg-yellow-500 hover:bg-yellow-600 text-white rounded"
+                className="px-3 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600 text-sm"
               >
                 Edit
               </button>
               <button
                 onClick={() => handleDeleteCategory(cat._id)}
-                className="px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded"
+                className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600 text-sm"
               >
                 Delete
               </button>
@@ -249,5 +254,5 @@ const CategoryPage = () => {
     </div>
   );
 };
- 
+
 export default CategoryPage;

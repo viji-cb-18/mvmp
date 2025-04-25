@@ -3,49 +3,22 @@ require("dotenv").config();
 const User = require("../models/User");
 const bcrypt = require("bcryptjs");
 
-/*exports.authenticateUser = async (req, res, next) => {
-    try {
-
-        console.log("Authorization Header:", req.headers["authorization"]); 
-
-        const token = req.headers["authorization"]?.split(" ")[1]; 
-
-        if (!token) {
-            return res.status(401).json({ msg: "Access denied! No token provided" });
-        }
-
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        req.user = await User.findById(decoded.userId).select("-password");
-
-        if (!req.user) {
-            return res.status(401).json({ msg: "Unauthorized! User not found" });
-        }
-
-        next();
-    } catch (error) {
-        console.error("Authorization Error:", error);
-        res.status(401).json({ msg: "Invalid or expired token" });
-    }
-};*/
 
 exports.authenticateUser = async (req, res, next) => {
     try {
-      // Log all headers for debugging
-      console.log("Request Headers:", req.headers);
   
-      // Handle case-insensitive Authorization header
+      console.log("Request Headers:", req.headers);
+
       const authHeader = req.headers['authorization'] || req.headers['Authorization'];
       if (!authHeader) {
         return res.status(401).json({ msg: "Access denied! No token provided" });
       }
-  
-      // Token parsing: expected format "Bearer <token>"
+
       const token = authHeader.split(" ")[1];
       if (!token) {
         return res.status(401).json({ msg: "Token missing in Authorization header" });
       }
   
-      // Verify JWT and get user from DB
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
       req.user = await User.findById(decoded.userId).select("-password");
   

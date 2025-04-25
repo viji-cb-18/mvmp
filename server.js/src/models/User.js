@@ -7,12 +7,20 @@ const userSchema = new mongoose.Schema({
   email: { type: String, required: true, unique: true },
   phone: { type: String },
   password: { type: String, required: true },
- 
+  address: {
+    street: { type: String },
+    city: { type: String },
+    postalCode: { type: String },
+    country: { type: String }
+  },
+  paymentMethod: { type: String },
+  
 
   role: {
     type: String,
     enum: ["customer", "vendor", "admin"],
-    required: true,
+    //required: true,
+    default: "customer",
   },
 
   approvalStatus: {

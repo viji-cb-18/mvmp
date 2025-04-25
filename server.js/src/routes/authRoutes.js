@@ -7,10 +7,15 @@ const { uploadMiddleware } = require("../config/cloudinaryconfig");
 router.post("/register", authController.registerUser);
 router.post("/login", authController.loginUser);
 
-router.post("/upload-profile", authMiddleware.authenticateUser, uploadMiddleware.single("image"), authController.uploadProfileImage);
-router.get("/user-profile",authMiddleware.authenticateUser, authController.getUserprofile);
-router.put("/update-profile",authMiddleware.authenticateUser, authController.updateUserProfile);
+router.get("/profile",authMiddleware.authenticateUser, authController.getProfile);
+router.put("/update-profile",authMiddleware.authenticateUser, authController.updateProfile);
 router.put("/change-password", authMiddleware.authenticateUser, authController.changePassword);
+router.post(
+    "/upload-profile-image",
+    authMiddleware.authenticateUser,
+    uploadMiddleware.single("profileImage"), 
+    authController.uploadProfileImage
+  );
 
 router.get("/users",authMiddleware.authenticateUser, authMiddleware.adminOnly, authController.getAllUsers);
 router.get("/users/:userId",authMiddleware.authenticateUser, authController.getUserById);
@@ -20,9 +25,14 @@ router.get("/vendors", authMiddleware.authenticateUser, authMiddleware.adminOnly
 router.put("/approve/:id", authMiddleware.authenticateUser, authMiddleware.adminOnly, authController.updateVendorApproval);
 router.get("/pending-vendors", authMiddleware.authenticateUser, authMiddleware.adminOnly, authController.getPendingVendors);
 
-router.put("/vendor/profile", authMiddleware.authenticateUser, authController.updateVendorProfile);
-router.put("/vendor/store-info", authMiddleware.authenticateUser, authController.manageStoreInfo);
-router.post("/vendor/store-logo", authMiddleware.authenticateUser, uploadMiddleware.single("image"), authController.uploadStoreLogo);
+router.post(
+    "/vendor/store-logo",
+    authMiddleware.authenticateUser,
+    uploadMiddleware.single("image"),
+    authController.uploadStoreLogo
+  );
+  
 
 
 module.exports = router;
+
