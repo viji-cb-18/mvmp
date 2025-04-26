@@ -9,7 +9,6 @@ console.log("STRIPE_SECRET_KEY =", process.env.STRIPE_SECRET_KEY);
   
 const app = express();
 app.use(express.json());
-app.use(cors());
 
 app.use(cors({
     origin: "http://localhost:5173",
