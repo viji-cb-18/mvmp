@@ -32,7 +32,7 @@ import Dashboard from '../pages/Customer/Dashboard';
 import NewArrivalsPage from '../pages/Customer/NewArrivalsPage';
 import BestSellingProducts from "../components/BestSellingProducts";
 import CategoriesPage from "../pages/CategoriesPage";
-import AboutUs from '../pages/Aboutus';
+import AboutUs from '../pages/AboutUs';
 
 
 import VendorDashboard from '../pages/Vendor/Dashboard';
