@@ -164,7 +164,7 @@ const CartPage = () => {
         <div className="flex justify-center gap-4 mt-2">
           <img src="/icons/visa.svg" className="h-5" alt="Visa" />
           <img src="/icons/mastercard.svg" className="h-5" alt="Mastercard" />
-          <img src="/icons/paypal.svg" className="h-5" alt="PayPal" />
+          
         </div>
       </div>
     </div>
