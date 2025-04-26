@@ -230,7 +230,7 @@ const NewArrivalsPage = ({ isPreview = false }) => {
       <div className="container mx-auto px-4">
         <div className="flex justify-between items-center mb-6">
           {!isPreview && (
-            <h3 className="text-2xl font-bold text-gray-800 mb-6 text-center">🆕 New Arrivals</h3>
+            <h3 className="text-2xl font-bold text-gray-800 mb-6 text-center">New Arrivals</h3>
           )}
 
           {!isPreview && (
