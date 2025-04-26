@@ -7,7 +7,7 @@ import ProtectedRoute from '../components/ProtectedRoute';
 
 
 import AuthLayout from "../layouts/AuthLayout";
-import UserLayout from '../layouts/Userlayout';
+import UserLayout from '../layouts/UserLayout';
 import AdminLayout from '../layouts/AdminLayout';
 import VendorLayout from '../layouts/VendorLayout';
 import CustomerLayout from '../layouts/CustomerLayout';
