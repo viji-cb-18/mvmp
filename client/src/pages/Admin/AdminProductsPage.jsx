@@ -174,7 +174,6 @@ const AdminProductsPage = () => {
                   <th className="py-3 px-4 text-left">Image</th>
                   <th className="py-3 px-4 text-left">Name</th>
                   <th className="py-3 px-4 text-left">Price</th>
-                  <th className="py-3 px-4 text-left">Vendor</th>
                   <th className="py-3 px-4 text-left">Category</th>
                   <th className="py-3 px-4 text-left">Actions</th>
                 </tr>
@@ -191,7 +190,6 @@ const AdminProductsPage = () => {
                     </td>
                     <td className="py-3 px-4 font-medium">{product.name}</td>
                     <td className="py-3 px-4">₹{product.price.toFixed(2)}</td>
-                    <td className="py-3 px-4">{product.vendorId?.storeName || "N/A"}</td>
                     <td className="py-3 px-4">{product.category?.name || "N/A"}</td>
                     <td className="py-3 px-4">
                       <div className="flex gap-2">

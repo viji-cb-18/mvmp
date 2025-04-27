@@ -47,7 +47,7 @@ const AdminOrders = () => {
                 <th className="p-3">Customer</th>
                 <th className="p-3">Vendor</th>
                 <th className="p-3">Total</th>
-                <th className="p-3">Payment</th>
+                
                 <th className="p-3">Status</th>
                 <th className="p-3">Date</th>
               </tr>
@@ -61,7 +61,7 @@ const AdminOrders = () => {
                   <td className="p-3">{o.customerId?.name || "N/A"}</td>
                   <td className="p-3">{o.vendorId?.storeName || "N/A"}</td>
                   <td className="p-3">₹{o.totalAmount}</td>
-                  <td className="p-3 capitalize">{o.paymentMethod}</td>
+                 
                   <td className="p-3">
                     <span
                       className={`px-2 py-1 rounded-full text-xs font-medium ${
