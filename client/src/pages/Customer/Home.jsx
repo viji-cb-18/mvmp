@@ -107,7 +107,7 @@ const Home = () => {
             },
             {
               icon: "/icons/package-return-logistic-svgrepo-com.svg",
-              title: "90 Days Return",
+              title: "7 Days Return",
               desc: "If goods have problems",
             },
             {

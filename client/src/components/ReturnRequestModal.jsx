@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { requestOrderReturn } from "../services/orderServices";
+import { requestReturn } from "../services/orderServices";
 import { toast } from "react-toastify";
 
 const ReturnRequestModal = ({ orderId, productId, onClose, onSuccess }) => {
@@ -16,7 +16,7 @@ const ReturnRequestModal = ({ orderId, productId, onClose, onSuccess }) => {
     if (imageFile) formData.append("image", imageFile);
 
     try {
-      await requestOrderReturn(orderId, formData);
+      await requestReturn(orderId, formData);
       toast.success("Return requested");
       onSuccess();
       onClose();

@@ -8,10 +8,12 @@ import ReturnRequestModal from "../../components/ReturnRequestModal";
 const OrderDetails = () => {
   const { orderId } = useParams();
   const navigate = useNavigate();
+
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showReturnModal, setShowReturnModal] = useState({ show: false, productId: null });
-
+   
+  
   const fetchOrder = async () => {
     try {
       const res = await getOrderById(orderId);
@@ -160,6 +162,7 @@ const OrderDetails = () => {
           productId={showReturnModal.productId}
           onClose={() => setShowReturnModal({ show: false, productId: null })}
           onSuccess={fetchOrder}
+          
         />
       )}
     </div>

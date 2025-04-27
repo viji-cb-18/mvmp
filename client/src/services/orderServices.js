@@ -27,7 +27,7 @@ export const getMyOrders = () => axios.get("/orders/my-orders");
 export const updateOrderStatus = (orderId, status) =>
     axios.put(`/orders/${orderId}/status`, { status });
 
-export const requestOrderReturn = (orderId, formData) =>
+export const requestReturn = (orderId, formData) =>
     axios.put(`/orders/return/${orderId}`, formData);
   
 export const approveReturnRequest = (orderId, productId) =>
