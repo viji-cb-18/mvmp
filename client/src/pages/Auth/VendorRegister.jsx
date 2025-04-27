@@ -40,8 +40,8 @@ const VendorRegister = () => {
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 px-4">
       <div className="mb-6">
         <Link to="/" className="flex items-center space-x-1">
-          <span className="text-4xl font-extrabold text-blue-700 tracking-tight">Nezi</span>
-          <span className="text-4xl font-extrabold text-yellow-500 tracking-tight">Cart</span>
+        <span className="text-4xl font-extrabold text-[#3ED6B5] tracking-tight">Nezi</span>
+        <span className="text-4xl font-extrabold text-gray-800 tracking-tight">Cart</span>
         </Link>
       </div>
 
@@ -129,7 +129,7 @@ const VendorRegister = () => {
 
           <button
             type="submit"
-            className="w-full bg-blue-600 text-white py-2 rounded-md text-sm font-medium hover:bg-blue-700 transition"
+            className="w-full bg-[#3ED6B5] text-white py-2 rounded-md text-sm font-medium hover:bg-blue-700 transition"
           >
             Register as Vendor
           </button>
