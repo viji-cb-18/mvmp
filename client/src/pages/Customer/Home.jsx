@@ -67,7 +67,7 @@ const Home = () => {
                       )}
                       {banner.link && (
                         <Link
-                          to={banner.link}
+                          to="/categories"
                           className="inline-block bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded shadow transition"
                         >
                           Shop Now

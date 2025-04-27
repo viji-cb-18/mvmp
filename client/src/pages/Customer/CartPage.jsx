@@ -12,7 +12,7 @@ const CartPage = () => {
   const [cartItems, setCartItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
-  const discount = 60;
+  const discount = 0;
 
   useEffect(() => {
     const fetchCart = async () => {

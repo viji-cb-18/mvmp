@@ -118,6 +118,7 @@ const Category = require("../models/Category");
 */
 exports.getAllProducts = async (req, res) => {
   try {
+    console.log("Received Search Query:", req.query.search); 
     const filter = {};
 
     if (req.query.vendorId) {
@@ -138,10 +139,18 @@ exports.getAllProducts = async (req, res) => {
       }
     }
 
-    if (req.query.search) {
+    /*if (req.query.search) {
       const searchRegex = new RegExp(req.query.search, "i");
       filter.name = searchRegex;
-    }
+    }*/
+      if (req.query.search) {
+        const searchRegex = new RegExp(req.query.search, "i");
+        filter.$or = [
+          { name: searchRegex },
+          { description: searchRegex },
+        ];
+      }
+      
 
     if (req.query.recent === "true") {
       const tenDaysAgo = new Date();

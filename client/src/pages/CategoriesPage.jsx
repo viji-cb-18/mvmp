@@ -321,12 +321,13 @@ const CategoriesPage = () => {
   const limit = 12;
 
   const [searchParams] = useSearchParams();
+  const searchQuery = searchParams.get("search")?.toLowerCase() || null;
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
   const selectedCategory = searchParams.get("category") || null;
   const selectedSubcategory = searchParams.get("subcategory") || null;
-  const searchQuery = searchParams.get("search")?.toLowerCase() || null;
+  //const searchQuery = searchParams.get("search")?.toLowerCase() || null;
   const shouldFetchAll = !selectedCategory && !searchQuery;
 
   useEffect(() => {
@@ -342,6 +343,8 @@ const CategoriesPage = () => {
             limit,
           }),
         ]);
+
+        console.log("Product Fetch Response:", prodRes);
 
         setCategories(catRes.data);
 
@@ -565,7 +568,7 @@ const CategoriesPage = () => {
                         <span className="text-gray-500">({reviewCounts[product._id] || 0})</span>
                       </div>
                       <p className="text-[#3ED6B5] font-bold text-sm">
-                        ${product.price}
+                      ₹{product.price}
                       </p>
                     </div>
                     <button

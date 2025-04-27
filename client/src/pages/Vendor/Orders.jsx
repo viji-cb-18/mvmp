@@ -260,6 +260,20 @@ const Orders = () => {
                   <td className="p-3 text-green-600 font-semibold">
                     ₹{o.totalAmount}
                   </td>
+
+                  <td className="p-3">
+        <span className={`
+          inline-block px-2 py-1 rounded text-xs font-semibold
+          ${o.orderStatus === 'CancelOrder' ? 'bg-red-100 text-red-600' : ''}
+          ${o.orderStatus === 'Delivered' ? 'bg-green-100 text-green-600' : ''}
+          ${o.orderStatus === 'Processing' ? 'bg-yellow-100 text-yellow-600' : ''}
+          ${o.orderStatus === 'Shipped' ? 'bg-blue-100 text-blue-600' : ''}
+          ${o.orderStatus === 'Pending' ? 'bg-gray-100 text-gray-600' : ''}
+        `}>
+          {o.orderStatus}
+        </span>
+      </td>
+
                   <td className="p-3">
                     <select
                       value={o.orderStatus}
@@ -270,18 +284,21 @@ const Orders = () => {
                       <option value="Processing">Processing</option>
                       <option value="Shipped">Shipped</option>
                       <option value="Delivered">Delivered</option>
+                      <option value="CancelOrder">Cancel Order</option>
                     </select>
                   </td>
                   <td className="p-3">
                     {new Date(o.createdAt).toLocaleDateString()}
                   </td>
                   <td className="p-3">
+                  {o.orderStatus !== 'CancelOrder' && (
                     <button
                       onClick={() => handleOpenModal(o)}
                       className="text-sm text-white bg-indigo-600 hover:bg-indigo-700 px-3 py-1 rounded"
                     >
                       Create Shipment
                     </button>
+                      )}
                   </td>
                 </tr>
               ))}
