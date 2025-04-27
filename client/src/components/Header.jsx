@@ -126,7 +126,7 @@ const Header = () => {
                       Hello, {user.name || user.email}
                     </p>
                     <Link to={`/${user.role}/dashboard`} onClick={() => setShowAccountMenu(false)} className="block px-2 py-1 hover:bg-gray-100">My Profile</Link>
-                    <Link to="/orders" onClick={() => setShowAccountMenu(false)} className="block px-2 py-1 hover:bg-gray-100">Orders</Link>
+                    <Link to={`/${user.role}/dashboard?tab=orders`}  onClick={() => setShowAccountMenu(false)} className="block px-2 py-1 hover:bg-gray-100">Orders</Link>
                     <button onClick={handleLogout} className="block w-full text-left px-2 py-1 hover:bg-gray-100">Logout</button>
                   </>
                 ) : (
