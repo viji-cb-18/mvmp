@@ -103,7 +103,7 @@ const Dashboard = () => {
           </ResponsiveContainer>
         </div>
 
-        <div className="bg-white border border-gray-200 p-4 rounded-xl shadow">
+        {/*<div className="bg-white border border-gray-200 p-4 rounded-xl shadow">
           <h4 className="text-lg font-semibold text-[#2D70E4] mb-2">Top Vendors by Orders</h4>
           <ResponsiveContainer width="100%" height={250}>
             <PieChart>
@@ -123,7 +123,7 @@ const Dashboard = () => {
               <Tooltip />
             </PieChart>
           </ResponsiveContainer>
-        </div>
+        </div>*/}
       </div>
 
      

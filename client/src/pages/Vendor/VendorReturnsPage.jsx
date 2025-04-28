@@ -14,7 +14,7 @@ const VendorReturnRequests = () => {
   const fetchVendorOrders = async () => {
     try {
       const res = await getVendorOrders();
-      setOrders(res.data.orders || []);
+      setOrders(res.data || []);
     } catch (err) {
       toast.error("Failed to fetch vendor orders");
     } finally {

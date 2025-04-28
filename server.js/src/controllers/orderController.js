@@ -347,8 +347,19 @@ exports.deleteOrder = async (req, res) => {
       if (order.paymentMethod === "COD") {
         item.manualRefundRequired = true;
       }
-  
+      
+      item.returnRequested = false;
       item.returnApproved = true;
+      
+      const allProductsReturned = order.products.every(
+        (p) => p.returnApproved
+      );
+      
+      if (allProductsReturned) {
+        order.orderStatus = "Refunded";
+      }
+      
+
       await order.save();
   
       res.status(200).json({
@@ -400,7 +411,7 @@ exports.deleteOrder = async (req, res) => {
 
   exports.getMyOrders = async (req, res) => {
     try {
-      const userId = req.user.id;
+      const userId = req.user.id; 
   
       const orders = await Order.find({ customerId: userId }).sort({ createdAt: -1 });
   
@@ -440,7 +451,7 @@ exports.getVendorOrders = async (req, res) => {
     }
   };
   */
-  exports.getVendorOrders = async (req, res) => {
+  /*exports.getVendorOrders = async (req, res) => {
     try {
       const vendorId = req.user._id;
   
@@ -472,4 +483,46 @@ exports.getVendorOrders = async (req, res) => {
     }
   };
   
+*/
+exports.getVendorOrders = async (req, res) => {
+  try {
+    console.log("Fetching vendor orders...");
+
+    if (!req.user) {
+      console.error("No user found in request");
+      return res.status(401).json({ success: false, message: "Unauthorized" });
+    }
+
+    const vendorId = req.user._id;
+    console.log("Vendor ID:", vendorId);
+
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+
+    const filter = { vendorId };
+
+    const total = await Order.countDocuments(filter);
+
+    const orders = await Order.find(filter)
+      .populate('customerId', 'name email')  // check if customerId exists in Order schema
+      .populate('products.productId', 'name price image') // check if products.productId exist properly
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
+
+    console.log("Fetched orders:", orders.length);
+
+    res.status(200).json({
+      success: true,
+      currentPage: page,
+      totalPages: Math.ceil(total / limit),
+      totalItems: total,
+      data: orders,
+    });
+  } catch (error) {
+    console.error("Vendor orders fetch failed:", error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
 
