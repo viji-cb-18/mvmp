@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import axios from "axios";
+//import axios from "axios";
 import { Carousel } from "react-responsive-carousel";
 import "react-responsive-carousel/lib/styles/carousel.min.css";
 import BestSellingProducts from "../../components/BestSellingProducts";
 import NewArrivalsPage from "../Customer/NewArrivalsPage"; 
-import { getBestSellingProducts } from "../../services/productServices";
+//import { getBestSellingProducts } from "../../services/productServices";
 import { getBanners } from "../../services/bannerServices";
 
 const Home = () => {

@@ -16,8 +16,8 @@ export const getAllProducts = async (filters = {}) => {
   return res.data;
 };
 
-export const getBestSellingProducts = async () => {
-  return await axios.get('/products/best-sellers');
+export const getBestSellingProducts = async (params = {}) => {
+  return await axios.get('/products/best-sellers', { params });
 };
 
 export const getProductById = async (id) => {
