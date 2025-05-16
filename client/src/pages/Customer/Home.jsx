@@ -6,6 +6,7 @@ import "react-responsive-carousel/lib/styles/carousel.min.css";
 import BestSellingProducts from "../../components/BestSellingProducts";
 import NewArrivalsPage from "../Customer/NewArrivalsPage"; 
 import { getBestSellingProducts } from "../../services/productServices";
+import { getBanners } from "../../services/bannerServices";
 
 const Home = () => {
  
@@ -15,7 +16,8 @@ const Home = () => {
 
     const fetchBanners = async () => {
       try {
-        const res = await axios.get("http://localhost:5001/api/banners");
+        //const res = await axios.get("http://localhost:5001/api/banners");
+        const res = await getBanners();
         const data = res.data;
         if (Array.isArray(data)) {
           setBanners(data);
