@@ -144,7 +144,7 @@ export default BestSellingProducts;
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getBestSellingProducts } from '../services/productServices';
-import { getReviewById } from '../services/reviewServices';
+import { getReviewsByProductId } from '../services/reviewServices';
 import { addToCart, getCartItems } from '../services/cartServices';
 import { useDispatch } from 'react-redux';
 import { setCart } from '../redux/slices/cartSlice';
@@ -174,7 +174,7 @@ const BestSellingProducts = ({ isPreview = false }) => {
         await Promise.all(
           products.map(async (product) => {
             try {
-              const res = await getReviewById(product._id);
+              const res = await getReviewsByProductId(product._id);
               const reviewList = res.data?.data || [];
               const total = reviewList.reduce((sum, r) => sum + r.rating, 0);
               ratingsMap[product._id] = reviewList.length ? total / reviewList.length : 0;

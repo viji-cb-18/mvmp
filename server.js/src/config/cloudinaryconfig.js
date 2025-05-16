@@ -1,5 +1,7 @@
 const cloudinary = require("cloudinary").v2;
 const multer = require("multer");
+const streamifier = require("streamifier"); 
+
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -38,7 +40,9 @@ const uploadToCloudinary = (buffer, folder = "uploads") => {
         resolve(result.secure_url);
       }
     );
-    stream.end(buffer);
+    //stream.end(buffer);
+    streamifier.createReadStream(buffer).pipe(stream); // ✅ NEW - reliable streaming
+
   });
 };
 

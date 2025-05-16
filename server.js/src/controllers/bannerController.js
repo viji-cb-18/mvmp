@@ -1,8 +1,13 @@
 const Banner = require("../models/Banner");
 const { uploadToCloudinary } = require("../config/cloudinaryconfig");
 
+
+
 exports.uploadBanner = async (req, res) => {
   try {
+
+    console.log("Incoming request body:", req.body);
+    console.log("Incoming file:", req.file);
     const { title, subtitle, link } = req.body;
 
     if (!req.file) {

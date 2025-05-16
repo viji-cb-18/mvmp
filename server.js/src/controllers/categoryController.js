@@ -93,12 +93,10 @@ exports.addSubCategory = async (req, res) => {
     try {
       const categories = await Category.find({ parentCategory: null })
         .populate("subcategories", "name categoryImage");
-  
-      if (!categories.length) {
-        return res.status(404).json({ msg: "No categories found" });
-      }
-  
+
       res.status(200).json(categories);
+  
+    
     } catch (error) {
       res.status(500).json({ msg: "Failed to fetch categories", details: error.message });
     }

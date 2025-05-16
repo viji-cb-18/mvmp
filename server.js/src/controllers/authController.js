@@ -55,6 +55,15 @@ exports.loginUser = async (req, res) => {
             return res.status(400).json({ msg: "Invalid credentials" });
         }
 
+        if (user.role === "vendor") {
+          if (user.approvalStatus === "pending") {
+            return res.status(403).json({ msg: "Your vendor account is pending admin approval." });
+          } else if (user.approvalStatus === "rejected") {
+            return res.status(403).json({ msg: "Your vendor account has been rejected by admin." });
+          }
+        }
+        
+
         const token = jwt.sign(
             { userId: user._id, role: user.role, email: user.email },
             process.env.JWT_SECRET,
@@ -200,7 +209,7 @@ exports.getPendingVendors = async (req, res) => {
         { approvalStatus },
         { new: true }
       );
-      if (!vendor) {
+      if (!vendor || vendor.role !== "vendor") {
         return res.status(404).json({ msg: "Vendor not found" });
       }
       res.status(200).json({ msg: `Vendor ${approvalStatus}`, vendor });

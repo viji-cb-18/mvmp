@@ -305,15 +305,15 @@ import { useDispatch } from "react-redux";
 import { setCart } from "../redux/slices/cartSlice";
 import { toast } from "react-toastify";
 import { FaShoppingCart, FaStar, FaRegStar, FaStarHalfAlt } from "react-icons/fa";
-import { getReviewById } from "../services/reviewServices";
+import { getReviewsByProductId } from "../services/reviewServices";
 
 const CategoriesPage = () => {
   const [categories, setCategories] = useState([]);
   const [products, setProducts] = useState([]);
   const [sortBy, setSortBy] = useState("default");
-  const [priceRange, setPriceRange] = useState([0, 10000]);
+  const [priceRange, setPriceRange] = useState([0, 1000000]);
   const [vendors, setVendors] = useState([]);
-  const [selectedVendor, setSelectedVendor] = useState("");
+  //const [selectedVendor, setSelectedVendor] = useState("");
   const [productRatings, setProductRatings] = useState({});
   const [reviewCounts, setReviewCounts] = useState({});
   const [currentPage, setCurrentPage] = useState(1);
@@ -321,27 +321,49 @@ const CategoriesPage = () => {
   const limit = 12;
 
   const [searchParams] = useSearchParams();
-  const searchQuery = searchParams.get("search")?.toLowerCase() || null;
+  //const searchQuery = searchParams.get("search")?.toLowerCase() || null;
+  const searchQuery = searchParams.get("search") || null;
+
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
   const selectedCategory = searchParams.get("category") || null;
   const selectedSubcategory = searchParams.get("subcategory") || null;
   //const searchQuery = searchParams.get("search")?.toLowerCase() || null;
+  const selectedVendor = searchQuery ? "" : searchParams.get("vendor") || "";
+
   const shouldFetchAll = !selectedCategory && !searchQuery;
 
   useEffect(() => {
     const fetchData = async () => {
       try {
+
+        if (searchQuery) {
+          //setSelectedVendor("");
+          setCurrentPage(1);
+      }
+
+
+        const actualCategory = searchQuery ? null : selectedCategory;
+        const actualSubcategory = searchQuery ? null : selectedSubcategory;
+
         const [catRes, prodRes] = await Promise.all([
           getCategory(),
-          getAllProducts({
+          /*getAllProducts({
             category: selectedCategory,
             subcategory: selectedSubcategory,
             search: searchQuery,
             page: currentPage,
             limit,
-          }),
+          }),*/
+          getAllProducts({
+            category: actualCategory,
+            subcategory: actualSubcategory,
+            search: searchQuery,
+            page: currentPage,
+            limit,
+        }),
+          
         ]);
 
         console.log("Product Fetch Response:", prodRes);
@@ -382,7 +404,7 @@ const CategoriesPage = () => {
         await Promise.all(
           productList.map(async (product) => {
             try {
-              const res = await getReviewById(product._id);
+              const res = await getReviewsByProductId(product._id);
               const reviews = res.data?.data || [];
               const total = reviews.reduce((sum, r) => sum + r.rating, 0);
               ratingsMap[product._id] = reviews.length ? total / reviews.length : 0;
@@ -463,7 +485,7 @@ const CategoriesPage = () => {
         </>
       )}
 
-      {(selectedCategory || shouldFetchAll) && (
+      {(selectedCategory || searchQuery || shouldFetchAll) && (
         <>
           <div className="flex justify-between items-center mt-6 mb-4">
             <h2 className="text-xl font-bold capitalize">Products</h2>
@@ -512,7 +534,12 @@ const CategoriesPage = () => {
 
             <select
               value={selectedVendor}
-              onChange={(e) => setSelectedVendor(e.target.value)}
+              onChange={(e) => {
+                const params = new URLSearchParams(window.location.search);
+                if (e.target.value) params.set("vendor", e.target.value);
+                else params.delete("vendor");
+                navigate(`/categories?${params.toString()}`);
+            }}
               className="border px-3 py-1 rounded"
             >
               <option value="">All Vendors</option>

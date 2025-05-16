@@ -313,7 +313,7 @@ exports.deleteOrder = async (req, res) => {
 
   
   
-  exports.approveReturnRequest = async (req, res) => {
+  /*exports.approveReturnRequest = async (req, res) => {
     try {
       const { orderId } = req.params;
       const { productId } = req.body;
@@ -405,7 +405,117 @@ exports.deleteOrder = async (req, res) => {
     } catch (err) {
       res.status(500).json({ msg: "Server error", error: err.message });
     }
+  };*/
+
+  exports.approveReturnRequest = async (req, res) => {
+    try {
+      const { orderId } = req.params;
+      const { productId } = req.body;
+  
+      //const order = await Order.findById(orderId).populate("products.productId");
+      const order = await Order.findById(orderId);   
+
+      if (!order) return res.status(404).json({ msg: "Order not found" });
+  
+      const item = order.products.find((p) => {
+        const pid = typeof p.productId === "object" ? p.productId._id : p.productId;
+        return pid.toString() === productId;
+      });
+  
+      if (!item) return res.status(404).json({ msg: "Product not found in order" });
+      if (!item.returnRequested) return res.status(400).json({ msg: "Return not requested for this product" });
+      if (item.returnApproved === true) return res.status(400).json({ msg: "Already approved" });
+  
+      const refundAmount = item.price * item.quantity * 100;
+  
+      if (order.paymentMethod === "Card" && order.paymentIntentId) {
+        try {
+          await stripe.refunds.create({
+            payment_intent: order.paymentIntentId,
+            amount: refundAmount,
+            reason: "requested_by_customer",
+          });
+        } catch (stripeErr) {
+          console.error("Stripe refund error:", stripeErr);
+          return res.status(500).json({ msg: "Stripe refund failed", error: stripeErr.message });
+        }
+      }
+  
+      if (order.paymentMethod === "COD") {
+        item.manualRefundRequired = true;
+      }
+  
+      item.returnRequested = false;
+      item.returnApproved = true;
+  
+    
+      order.markModified("products");
+  
+    
+      const approvedStatus = order.products.map(p => p.returnApproved);
+      console.log("Approved products status:", approvedStatus);
+  
+      const allProductsReturned = order.products.every((p) => p.returnApproved === true);
+      if (allProductsReturned) {
+        order.orderStatus = "Refunded";
+      }
+  
+     
+      try {
+        await order.save();
+      } catch (saveError) {
+        console.error("Error saving order:", saveError.message, saveError.errors);
+        return res.status(500).json({ msg: "Order save failed", error: saveError.message });
+      }
+  
+      res.status(200).json({
+        msg:
+          order.paymentMethod === "Card"
+            ? "Return approved and refund processed"
+            : "Return approved. Manual refund required (COD).",
+        order,
+      });
+    } catch (error) {
+      console.error("Approval error:", error);
+      res.status(500).json({ msg: "Server error", error: error.message });
+    }
   };
+  
+  
+  exports.rejectReturnRequest = async (req, res) => {
+    try {
+      const { orderId, productId } = req.params;
+  
+      const order = await Order.findById(orderId);
+      if (!order) return res.status(404).json({ msg: "Order not found" });
+  
+      const item = order.products.find((p) =>
+        p.productId.toString() === productId.toString()
+      );
+  
+      if (!item) return res.status(404).json({ msg: "Product not found in order" });
+  
+      if (!item.returnRequested) {
+        return res.status(400).json({ msg: "No return requested for this product" });
+      }
+  
+    
+      item.returnRequested = false;
+      item.returnReason = "";
+      item.returnImage = "";
+      item.returnApproved = false; 
+      item.returnReviewedAt = new Date();
+  
+      order.markModified("products"); 
+  
+      await order.save();
+  
+      res.status(200).json({ msg: "Return rejected", order });
+    } catch (err) {
+      res.status(500).json({ msg: "Server error", error: err.message });
+    }
+  };
+  
   
   
 
@@ -505,8 +615,8 @@ exports.getVendorOrders = async (req, res) => {
     const total = await Order.countDocuments(filter);
 
     const orders = await Order.find(filter)
-      .populate('customerId', 'name email')  // check if customerId exists in Order schema
-      .populate('products.productId', 'name price image') // check if products.productId exist properly
+      .populate('customerId', 'name email')  
+      .populate('products.productId', 'name price image') 
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit);

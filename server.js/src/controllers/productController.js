@@ -116,6 +116,8 @@ const Category = require("../models/Category");
   };
   
 */
+
+/*
 exports.getAllProducts = async (req, res) => {
   try {
     console.log("Received Search Query:", req.query.search); 
@@ -142,7 +144,7 @@ exports.getAllProducts = async (req, res) => {
     /*if (req.query.search) {
       const searchRegex = new RegExp(req.query.search, "i");
       filter.name = searchRegex;
-    }*/
+    }*//*
       if (req.query.search) {
         const searchRegex = new RegExp(req.query.search, "i");
         filter.$or = [
@@ -184,7 +186,78 @@ exports.getAllProducts = async (req, res) => {
     res.status(500).json({ error: "Server Error", details: err.message });
   }
 };
+*/
 
+exports.getAllProducts = async (req, res) => {
+  try {
+    console.log("Received Search Query:", req.query.search); 
+    const filter = {};
+
+    if (req.query.vendorId) {
+      filter.vendorId = req.query.vendorId;
+    }
+
+    if (req.query.subcategory) {
+      filter.subcategory = req.query.subcategory;
+    } 
+    else if (req.query.category) {
+      const parent = await Category.findById(req.query.category).populate("subcategories", "_id");
+      if (parent) {
+        const subIds = parent.subcategories.map((s) => s._id);
+        filter.category = { $in: [req.query.category, ...subIds] };
+      } else {
+        return res.status(404).json({ error: "Parent category not found" });
+      }
+    }
+
+    if (req.query.recent === "true") {
+      const tenDaysAgo = new Date();
+      tenDaysAgo.setDate(tenDaysAgo.getDate() - 10);
+      filter.createdAt = { $gte: tenDaysAgo };
+    }
+
+   
+    //const andFilters = [filter];
+    const andFilters = Object.keys(filter).length ? [filter] : [];
+    if (req.query.search) {
+      const searchRegex = new RegExp(req.query.search, "i");
+      andFilters.push({
+        $or: [
+          { name: searchRegex },
+          { description: searchRegex },
+        ]
+      });
+    }
+    const finalFilter = andFilters.length > 0 ? { $and: andFilters } : {};
+
+    console.log("FINAL FILTER:", JSON.stringify(finalFilter));
+
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+
+    const total = await Product.countDocuments(finalFilter);
+
+    const products = await Product.find(finalFilter)
+      .populate("vendor", "storeName storeLogo")
+      .populate("category", "name")
+      .populate("subcategory", "name")
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
+
+    res.status(200).json({
+      success: true,
+      currentPage: page,
+      totalPages: Math.ceil(total / limit),
+      totalItems: total,
+      data: products,
+    });
+  } catch (err) {
+    console.error("Error in getAllProducts:", err);
+    res.status(500).json({ error: "Server Error", details: err.message });
+  }
+};
 
 
 
@@ -362,7 +435,7 @@ exports.getProductsByVendor = async (req, res) => {
     const products = await Product.find(filter)
       .populate("category", "name")
       .populate("subcategory", "name")
-      .sort({ createdAt: -1 }) // Optional: newest first
+      .sort({ createdAt: -1 }) 
       .skip(skip)
       .limit(limit);
 

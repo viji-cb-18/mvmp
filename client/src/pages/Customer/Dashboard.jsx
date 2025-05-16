@@ -454,6 +454,26 @@ const Dashboard = () => {
               Placed on: {new Date(order.createdAt).toLocaleString()}
             </div>
             <div className="text-gray-700 mt-2">Total: ₹{order.totalAmount}</div>
+            {order.products?.map((item, index) => {
+  const status = item.returnApproved;
+  if (status === true || status === false || item.returnRequested) {
+    return (
+      <p key={index} className="text-sm text-gray-700 mt-1">
+        {item.productId?.name}:{" "}
+        {status === true ? (
+          <span className="text-green-600 font-semibold">Return Approved</span>
+        ) : status === false ? (
+          <span className="text-red-600 font-semibold">Return Rejected</span>
+        ) : (
+          <span className="text-yellow-600 font-semibold">Return Requested (Pending)</span>
+        )}
+      </p>
+    );
+  }
+  return null;
+})}
+
+
 
             <div className="mt-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
               <Link

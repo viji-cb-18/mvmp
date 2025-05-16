@@ -1,3 +1,4 @@
+const masterSchema = require("./masterModel");
 const mongoose = require("mongoose");
 
 const bannerSchema = new mongoose.Schema({

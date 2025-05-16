@@ -157,7 +157,7 @@ import { setCart } from "../../redux/slices/cartSlice";
 import { useDispatch } from "react-redux";
 import { FaShoppingCart, FaStar, FaRegStar, FaStarHalfAlt } from "react-icons/fa";
 import { toast } from "react-toastify";
-import { getReviewById } from "../../services/reviewServices";
+import { getReviewsByProductId } from "../../services/reviewServices";
 
 const NewArrivalsPage = ({ isPreview = false }) => {
   const [products, setProducts] = useState([]);
@@ -179,7 +179,7 @@ const NewArrivalsPage = ({ isPreview = false }) => {
         await Promise.all(
           productList.map(async (product) => {
             try {
-              const res = await getReviewById(product._id);
+              const res = await getReviewsByProductId(product._id);
               const reviewList = res.data?.data || [];
               const total = reviewList.reduce((sum, r) => sum + r.rating, 0);
               ratingsMap[product._id] = reviewList.length ? total / reviewList.length : 0;

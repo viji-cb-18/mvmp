@@ -22,7 +22,7 @@ const ReviewForm = ({ productId }) => {
     formData.append("rating", rating);
     formData.append("comment", comment);
     if (image) {
-      formData.append("images", image); 
+      formData.append("image", image); 
     }
 
     try {

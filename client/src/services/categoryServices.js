@@ -3,7 +3,7 @@ import axios from './axiosInstance';
 export const getCategory = () => axios.get('/categories');
 
 export const getAllFlatCategories = async () => {
-  return await axios.get("/api/categories/all");
+  return await axios.get("/categories/all");
 };
 
 

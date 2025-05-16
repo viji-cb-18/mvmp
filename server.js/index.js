@@ -11,10 +11,16 @@ const app = express();
 app.use(express.json());
 
 
+const allowedOrigins = [
+  "http://localhost:5173",
+  "https://mvmpfrontend.vercel.app"
+];
+
 app.use(cors({
-    origin: "https://mvmpfrontend.vercel.app",
-    credentials: true,
-  }));
+  origin: allowedOrigins,
+  credentials: true
+}));
+
 
 app.use("/api/auth", require("./src/routes/authRoutes"));
 //app.use('/api/admin', require("./src/routes/adminRoutes"));

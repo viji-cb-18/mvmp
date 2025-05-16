@@ -10,8 +10,8 @@ export const addReview = (formData) =>
 export const getReviews = (params = {}) =>
         axios.get("/reviews", { params });
       
-export const getReviewById = (reviewId) =>
-        axios.get(`/reviews/${reviewId}`);
+//export const getReviewById = (reviewId) =>
+ //       axios.get(`/reviews/${reviewId}`);
 
 export const getReviewsByProductId = (productId) =>
         axios.get(`/reviews/product/${productId}`);

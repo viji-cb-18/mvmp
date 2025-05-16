@@ -11,6 +11,9 @@ const VendorReturnRequests = () => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  const getProductId = (productId) =>
+    typeof productId === "object" ? productId._id : productId;
+
   const fetchVendorOrders = async () => {
     try {
       const res = await getVendorOrders();
@@ -30,7 +33,21 @@ const VendorReturnRequests = () => {
     try {
       await approveReturnRequest(orderId, productId);
       toast.success("Return approved and refund processed");
-      fetchVendorOrders();
+      //fetchVendorOrders();
+      setOrders(prevOrders =>
+        prevOrders.map(order =>
+          order._id === orderId
+            ? {
+                ...order,
+                products: order.products.map(product =>
+                  product.productId.toString() === productId.toString()
+                    ? { ...product, returnApproved: true }
+                    : product
+                ),
+              }
+            : order
+        )
+      );
     } catch {
       toast.error("Failed to approve return");
     }
@@ -40,7 +57,21 @@ const VendorReturnRequests = () => {
     try {
       await rejectReturnRequest(orderId, productId);
       toast.success("Return request rejected");
-      fetchVendorOrders();
+      //fetchVendorOrders();
+      setOrders(prevOrders =>
+        prevOrders.map(order =>
+          order._id === orderId
+            ? {
+                ...order,
+                products: order.products.map(product =>
+                  product.productId.toString() === productId.toString()
+                    ? { ...product, returnApproved: false }
+                    : product
+                ),
+              }
+            : order
+        )
+      );
     } catch {
       toast.error("Failed to reject return");
     }
@@ -48,7 +79,12 @@ const VendorReturnRequests = () => {
 
   const returnRequests = orders.flatMap((order) =>
     order.products
-      .filter((item) => item.returnRequested)
+      //.filter((item) => item.returnRequested)
+      //.filter((item) => item.returnRequested !== false)
+      
+.filter((item) => item.returnRequested === true || item.returnApproved !== undefined)
+
+
       .map((item) => ({
         ...item,
         orderId: order._id,
@@ -108,27 +144,29 @@ const VendorReturnRequests = () => {
 
           
 <div className="mt-4 text-sm font-medium">
-  {item.returnApproved ? (
-    <span className="px-3 py-1 rounded bg-green-100 text-green-800">
-      Refunded
-    </span>
-  ) : (
-    <span className="px-3 py-1 rounded bg-yellow-100 text-yellow-800">
-       Pending
-    </span>
-  )}
+{item.returnApproved === true ? (
+  <span className="px-3 py-1 rounded bg-green-100 text-green-800">Refunded</span>
+) : item.returnApproved === false ? (
+  <span className="px-3 py-1 rounded bg-red-100 text-red-800">Rejected</span>
+) : (
+  <span className="px-3 py-1 rounded bg-yellow-100 text-yellow-800">Pending</span>
+)}
+
 </div>
 
-{!item.returnApproved && (
+{item.returnApproved === undefined && (
+
   <div className="mt-4 flex gap-2">
     <button
-      onClick={() => handleApprove(item.orderId, item.productId?._id)}
+      //onClick={() => handleApprove(item.orderId, item.productId?._id)}
+      onClick={() => handleApprove(item.orderId, getProductId(item.productId))}
       className="px-4 py-1 text-sm bg-green-500 text-white rounded hover:bg-green-600"
     >
       Approve
     </button>
     <button
-      onClick={() => handleReject(item.orderId, item.productId?._id)}
+      //onClick={() => handleReject(item.orderId, item.productId?._id)}
+      onClick={() => handleReject(item.orderId, getProductId(item.productId))}
       className="px-4 py-1 text-sm bg-red-500 text-white rounded hover:bg-red-600"
     >
       Reject

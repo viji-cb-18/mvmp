@@ -62,6 +62,7 @@ const Header = () => {
   
   };
 
+
   const handleCategoryClick = (categoryId, subcategoryId = null) => {
     const params = new URLSearchParams();
     params.set("category", categoryId);
